@@ -119,8 +119,8 @@ void AMy_TDS_GameProjectCharacter::SetupPlayerInputComponent(UInputComponent* Ne
 
 	NewInputComponent->BindAction((TEXT("ReloadEvent")), EInputEvent::IE_Released, this, &AMy_TDS_GameProjectCharacter::TryReloadWeapon);
 
-	NewInputComponent->BindAction(TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchNextWeapon);
-	NewInputComponent->BindAction(TEXT("SwitchPreviosWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon);
+	NewInputComponent->BindAction(TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchNextWeapon); //E
+	NewInputComponent->BindAction(TEXT("SwitchPreviosWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon); //Q
 }
 
 bool AMy_TDS_GameProjectCharacter::bSprintForward()
@@ -514,7 +514,7 @@ void AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon()
 
 		if (InventoryComponent)
 		{
-			if (InventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon - 1, OldIndex, OldInfo, false))
+			if (InventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon - 1, OldIndex, OldInfo, true))
 			{ }
 		}
 	}
