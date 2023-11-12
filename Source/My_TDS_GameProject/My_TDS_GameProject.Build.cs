@@ -15,6 +15,7 @@ public class My_TDS_GameProject : ModuleRules
 		"My_TDS_GameProject/Character",
 		"My_TDS_GameProject/FuncLibrary",
 		"My_TDS_GameProject/Game"
+		"My_TDS_GameProject/Weapon"
 		});
     }
 }

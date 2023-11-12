@@ -514,7 +514,7 @@ void AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon()
 
 		if (InventoryComponent)
 		{
-			if (InventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon - 1, OldIndex, OldInfo, true))
+			if (InventoryComponent->SwitchWeaponToIndex(CurrentIndexWeapon - 1, OldIndex, OldInfo, false))
 			{ }
 		}
 	}

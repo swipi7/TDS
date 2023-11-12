@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "My_TDS_GameProject/FuncLibrary/Types.h"
-#include "My_TDS_GameProject/WeaponDefaults.h"
+#include "My_TDS_GameProject/Weapon/WeaponDefaults.h"
 #include "My_TDS_GameProject/TDS_GameInstance.h"
 #include "My_TDS_GameProject/TDS_Inventar.h"
 #include "My_TDS_GameProject/Character/MyTDS_CharacterHealthComponent.h"
