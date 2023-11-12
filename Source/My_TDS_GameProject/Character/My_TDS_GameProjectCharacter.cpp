@@ -15,6 +15,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "My_TDS_GameProject/TDS_GameInstance.h"
+#include "ProjectileDefault.h"
 
 
 AMy_TDS_GameProjectCharacter::AMy_TDS_GameProjectCharacter()
@@ -98,6 +99,8 @@ void AMy_TDS_GameProjectCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Invul = false;
+
 	//InitWeapon(InitWeaponName);
 
 	if (CursorMaterial)
@@ -119,8 +122,12 @@ void AMy_TDS_GameProjectCharacter::SetupPlayerInputComponent(UInputComponent* Ne
 
 	NewInputComponent->BindAction((TEXT("ReloadEvent")), EInputEvent::IE_Released, this, &AMy_TDS_GameProjectCharacter::TryReloadWeapon);
 
-	NewInputComponent->BindAction(TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchNextWeapon); //E
-	NewInputComponent->BindAction(TEXT("SwitchPreviosWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon); //Q
+	NewInputComponent->BindAction(TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchNextWeapon);
+	NewInputComponent->BindAction(TEXT("TrySwitchPreviosWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon);
+
+	NewInputComponent->BindAction(TEXT("AbilityAction"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TryAbilityEnabled);
+
+	NewInputComponent->BindAction(TEXT("AbilityInvul"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TryAbilityInvul);
 }
 
 bool AMy_TDS_GameProjectCharacter::bSprintForward()
@@ -139,9 +146,23 @@ bool AMy_TDS_GameProjectCharacter::CharSprint()
 	DrawDebugLine(GetWorld(), StartVelocity, Velocity, FColor::Green, false, 0.f, 0.f, 2.f);
 	DrawDebugLine(GetWorld(), StartForward, Forward, FColor::Blue, false, 0.f, 0.f, 2.f);
 
-	UE_LOG(LogTemp, Display, TEXT("SPRINT %f"), TrueVector);
+	//UE_LOG(LogTemp, Display, TEXT("SPRINT %f"), TrueVector);
 
 	return TrueVector = Forward.Equals(Velocity, 80.f);
+}
+
+void AMy_TDS_GameProjectCharacter::ResetInvul()
+{
+	
+	if (!GetWorld()->GetTimerManager().IsTimerActive(TimerInvul))
+	{
+		GetWorld()->GetTimerManager().SetTimer(TimerInvul, this, &AMy_TDS_GameProjectCharacter::ChangeInvul, InvulTim, false, -1.0f);
+	}
+}
+
+void AMy_TDS_GameProjectCharacter::ChangeInvul()
+{
+	Invul = false;
 }
 
 void AMy_TDS_GameProjectCharacter::InputAxisX(float Value)
@@ -520,6 +541,74 @@ void AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon()
 	}
 }
 
+void AMy_TDS_GameProjectCharacter::TryAbilityEnabled()
+{
+	if (AbilityEffect)//TODO Cool down
+	{
+		UTDS_StateEffect* NewEffect = NewObject<UTDS_StateEffect>(this, AbilityEffect);
+		if (NewEffect)
+		{
+			NewEffect->InitObject(this);
+		}
+	}
+}
+
+void AMy_TDS_GameProjectCharacter::TryAbilityInvul()
+{
+	UE_LOG(LogTemp, Warning, TEXT("INVULNNNNNN"));
+
+	Invul = true;
+
+	ResetInvul();
+
+
+	//if (AbilityEffects)//TODO Cool down
+	//{
+	//	UTDS_StateEffect_ExecuteInvulnerability* NewEffect = NewObject<UTDS_StateEffect_ExecuteInvulnerability>(this, AbilityEffects);
+	//	if (NewEffect)
+	//	{
+	//		NewEffect->InitObject(this);
+	//	}
+	//}
+}
+
+EPhysicalSurface AMy_TDS_GameProjectCharacter::GetSurfaceType()
+{
+	EPhysicalSurface Result = EPhysicalSurface::SurfaceType_Default;
+	if (HealthComponent)
+	{
+		if (HealthComponent->GetCorrentShield() <= 0)
+		{
+			if (GetMesh())
+			{
+				UMaterialInterface* myMaterial = GetMesh()->GetMaterial(0);
+				if (myMaterial)
+				{
+					Result = myMaterial->GetPhysicalMaterial()->SurfaceType;
+				}
+			}
+		}
+	}
+
+	
+	return Result;
+}
+
+TArray<UTDS_StateEffect*>  AMy_TDS_GameProjectCharacter::GetAllCurrentEffects()
+{
+	return Effects;
+}
+
+void AMy_TDS_GameProjectCharacter::RemoveEffect(UTDS_StateEffect* RemoveEffect)
+{
+	Effects.Remove(RemoveEffect);
+}
+
+void AMy_TDS_GameProjectCharacter::AddEffect(UTDS_StateEffect* newEffect)
+{
+	Effects.Add(newEffect);
+}
+
 void AMy_TDS_GameProjectCharacter::CharDead()
 {
 	float TimeAnim = 0.0f;
@@ -550,11 +639,29 @@ void AMy_TDS_GameProjectCharacter::EnableRagDoll()
 
 float AMy_TDS_GameProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	if (bIsAlive)
-	{
-		HealthComponent->ChangeHealthValue(-DamageAmount);
+	//Damage Character
 
+	if (bIsAlive && Invul)
+	{
+		return 0.f;
+	}
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	if (bIsAlive && !Invul)
+	{	
+		UE_LOG(LogTemp, Warning, TEXT("Damage"));
+			HealthComponent->ChangeHealthValue(-DamageAmount);
+	
+	}
+
+	if(DamageEvent.IsOfType(FRadialDamageEvent::ClassID))
+	{
+		AProjectileDefault* myProjectile = Cast<AProjectileDefault>(DamageCauser);
+		if (myProjectile)
+		{
+			
+			UTypes::AddEffectBySurfaceType(this, myProjectile->ProjectileSetting.Effect, GetSurfaceType());
+			
+		}
 	}
 
 	return ActualDamage;

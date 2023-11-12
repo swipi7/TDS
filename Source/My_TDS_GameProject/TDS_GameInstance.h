@@ -6,7 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "FuncLibrary/Types.h"
 #include "Engine/DataTable.h"
-#include "WeaponDefaults.h"
+#include "Weapon/WeaponDefaults.h"
 #include "TDS_GameInstance.generated.h"
 
 UCLASS()

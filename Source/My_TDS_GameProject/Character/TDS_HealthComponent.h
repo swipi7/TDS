@@ -40,6 +40,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 		float CoefDamage = 1.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Invul")
+		bool Invul = true;
 	
 
 	// Called every frame
@@ -54,4 +56,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		virtual void ChangeHealthValue(float ChangeValue);
 	
+
+
 };

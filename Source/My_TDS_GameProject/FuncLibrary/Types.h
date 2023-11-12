@@ -4,6 +4,7 @@
 
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Engine/DataTable.h"
+#include "Weapon/TDS_StateEffect.h"
 
 #include "Types.generated.h"
 
@@ -78,6 +79,9 @@ struct FProjectileInfo
 	//fx when hit check by surface
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
 		TMap<TEnumAsByte<EPhysicalSurface>, UParticleSystem*> HitFXs;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
+		TSubclassOf<UTDS_StateEffect> Effect = nullptr;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ProjectileSetting")
 		UParticleSystem* ExploseFX = nullptr;
@@ -324,4 +328,10 @@ UCLASS()
 class MY_TDS_GAMEPROJECT_API UTypes : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintCallable)
+	static void AddEffectBySurfaceType(AActor* TakeEffectActor, TSubclassOf<UTDS_StateEffect> AddEffectClass, EPhysicalSurface SurfaceType);
+
+	
 };

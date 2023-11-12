@@ -45,26 +45,31 @@ void UTDS_HealthComponent::SetCurrentHealth(float NewHealth)
 
 void UTDS_HealthComponent::ChangeHealthValue(float ChangeValue)
 {
-
-	ChangeValue = ChangeValue * CoefDamage;
-
-	Health += ChangeValue;
 	
+	if (Invul)
+	{
+		ChangeValue = ChangeValue * CoefDamage;
 
-	if (Health > 100.0f)
-	{
-		Health = 100.0f;
-	}
-	else
-	{
-		if (Health < 0.0f)
+		Health += ChangeValue;
+
+
+
+
+		if (Health > 100.0f)
 		{
-			OnDead.Broadcast();
-			
+			Health = 100.0f;
 		}
+		else
+		{
+			if (Health < 0.0f)
+			{
+				OnDead.Broadcast();
+
+			}
+		}
+		OnHealthChange.Broadcast(Health, ChangeValue);
 	}
-	OnHealthChange.Broadcast(Health, ChangeValue);
-	
+
 }
 
 //void UTDS_HealthComponent::DeadEvent_Implementation()

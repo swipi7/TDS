@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ProjectileDefault.h"
-#include "WeaponDefaults.h"
+#include "Weapon/WeaponDefaults.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 AProjectileDefault::AProjectileDefault()
@@ -116,8 +117,15 @@ void AProjectileDefault::BulletCollisionSphereHit(UPrimitiveComponent* HitComp, 
 			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ProjectileSetting.HitSound, Hit.ImpactPoint);
 		}
 
+			UTypes::AddEffectBySurfaceType(Hit.GetActor(), ProjectileSetting.Effect, mySurfacetype);
+
+		
+
 	}
-	UGameplayStatics::ApplyDamage(OtherActor, ProjectileSetting.ProjectileDamage, GetInstigatorController(), this, NULL);
+	
+	UGameplayStatics::ApplyPointDamage(OtherActor, ProjectileSetting.ProjectileDamage, Hit.TraceStart, Hit, GetInstigatorController(), this, NULL);
+
+	//UGameplayStatics::ApplyDamage(OtherActor, ProjectileSetting.ProjectileDamage, GetInstigatorController(), this, NULL);
 	ImpactProjectile();
 	//UGameplayStatics::ApplyRadialDamageWithFalloff()
 	//Apply damage cast to if char like bp? //OnAnyTakeDmage delegate

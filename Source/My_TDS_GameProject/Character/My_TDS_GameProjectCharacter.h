@@ -9,11 +9,13 @@
 #include "My_TDS_GameProject/TDS_GameInstance.h"
 #include "My_TDS_GameProject/TDS_Inventar.h"
 #include "My_TDS_GameProject/Character/MyTDS_CharacterHealthComponent.h"
+#include "TDS_IGameActor.h"
+#include "Weapon/TDS_StateEffect.h"
 
 #include "My_TDS_GameProjectCharacter.generated.h"
 
 UCLASS(Blueprintable)
-class AMy_TDS_GameProjectCharacter : public ACharacter
+class AMy_TDS_GameProjectCharacter : public ACharacter, public ITDS_IGameActor
 {
 	GENERATED_BODY()
 
@@ -86,13 +88,33 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		TArray<UAnimMontage*> DeadsAnim;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
+		TSubclassOf<UTDS_StateEffect> AbilityEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
+		TSubclassOf<UTDS_StateEffect_ExecuteInvulnerability> AbilityEffects;
+
 	bool CharSprint();
 
 	bool TrueVector = false;
 
+	bool Invul = false;
+
+	
+	//Timer Invul
+	FTimerHandle TimerInvul;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "InvulTime")
+		float InvulTim = 3.0f;
+
+	void ResetInvul();
+	void ChangeInvul();
 	//Weapon	
 	AWeaponDefaults* CurrentWeapon = nullptr;
 
+
+	//Effects
+	TArray<UTDS_StateEffect*> Effects;
 	////for demo 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
 	FName InitWeaponName;
@@ -164,8 +186,19 @@ public:
 	void TrySwitchNextWeapon();
 	void TrySwitchPreviosWeapon();
 
+	//Ability
+	void TryAbilityEnabled();
+	//Invul
+	void TryAbilityInvul();
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 		int32 CurrentIndexWeapon = 0;
+
+	//Intarface
+	EPhysicalSurface GetSurfaceType() override;
+	TArray<UTDS_StateEffect*> GetAllCurrentEffects() override;
+	void RemoveEffect(UTDS_StateEffect* RemoveEffect)override;
+	void AddEffect(UTDS_StateEffect* newEffect)override;
 
 	UFUNCTION()
 	void CharDead();
