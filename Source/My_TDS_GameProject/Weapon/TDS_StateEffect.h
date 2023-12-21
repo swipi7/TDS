@@ -22,7 +22,7 @@ class MY_TDS_GAMEPROJECT_API UTDS_StateEffect : public UObject
 public: 
 
 	
-	virtual bool InitObject(AActor* Actor);
+	virtual bool InitObject(AActor* Actor, FName NameBoneHit);
 	virtual void DestroyObject();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting")
@@ -42,7 +42,7 @@ class MY_TDS_GAMEPROJECT_API UTDS_StateEffect_ExecuteOnce : public UTDS_StateEff
 	GENERATED_BODY()
 
 public:
-	bool InitObject(AActor* Actor) override;
+	bool InitObject(AActor* Actor, FName NameBoneHit) override;
 	void DestroyObject() override;
 
 	virtual void ExecuteOnce();
@@ -57,7 +57,7 @@ class MY_TDS_GAMEPROJECT_API UTDS_StateEffect_ExecuteTimer : public UTDS_StateEf
 	GENERATED_BODY()
 
 public:
-	bool InitObject(AActor* Actor) override;
+	bool InitObject(AActor* Actor, FName NameBoneHit) override;
 	void DestroyObject() override;
 
 	virtual void Execute();
@@ -84,7 +84,7 @@ class MY_TDS_GAMEPROJECT_API UTDS_StateEffect_ExecuteInvulnerability : public UT
 
 public:
 
-	bool InitObject(AActor* Actor) override;
+	bool InitObject(AActor* Actor, FName NameBoneHit) override;
 	void DestroyObject() override;
 
 	virtual void ExecuteInvul();

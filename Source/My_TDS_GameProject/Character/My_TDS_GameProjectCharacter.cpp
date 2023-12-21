@@ -177,7 +177,12 @@ void AMy_TDS_GameProjectCharacter::InputAxisY(float Value)
 
 void AMy_TDS_GameProjectCharacter::InputAttackPressed()
 {
-	AttackCharEvent(true);
+
+	if (bIsAlive)
+	{
+		AttackCharEvent(true);
+
+	}
 }
 
 void AMy_TDS_GameProjectCharacter::InputAttackReleased()
@@ -412,7 +417,7 @@ void AMy_TDS_GameProjectCharacter::InitWeapon(FName IdWeaponName, FAdditionalWea
 
 void AMy_TDS_GameProjectCharacter::TryReloadWeapon()
 {
-	if (CurrentWeapon && !CurrentWeapon->WeaponReloading)
+	if (bIsAlive && CurrentWeapon && !CurrentWeapon->WeaponReloading)
 	{
 		if (CurrentWeapon->GetWeaponRound() < CurrentWeapon->WeaponSetting.MaxRound && CurrentWeapon->CheckCanWeaponReload())
 			CurrentWeapon->InitReload();
@@ -548,7 +553,7 @@ void AMy_TDS_GameProjectCharacter::TryAbilityEnabled()
 		UTDS_StateEffect* NewEffect = NewObject<UTDS_StateEffect>(this, AbilityEffect);
 		if (NewEffect)
 		{
-			NewEffect->InitObject(this);
+			NewEffect->InitObject(this, NAME_None);
 		}
 	}
 }
@@ -620,12 +625,23 @@ void AMy_TDS_GameProjectCharacter::CharDead()
 	}
 
 	bIsAlive = false;
+
+	if (GetController())
+	{
+		GetController()->UnPossess();
+	}
+
+	
 	UnPossessed();
 	//Timer Ragdoll
 
 	GetWorldTimerManager().SetTimer(TimerHandle_RagDollTimer, this, &AMy_TDS_GameProjectCharacter::EnableRagDoll, TimeAnim, false);
 
 	GetCursorToWorld()->SetVisibility(false);
+
+	AttackCharEvent(false);
+
+	CharDead_BP();
 }
 
 void AMy_TDS_GameProjectCharacter::EnableRagDoll()
@@ -659,11 +675,16 @@ float AMy_TDS_GameProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent 
 		if (myProjectile)
 		{
 			
-			UTypes::AddEffectBySurfaceType(this, myProjectile->ProjectileSetting.Effect, GetSurfaceType());
+			UTypes::AddEffectBySurfaceType(this, NAME_None, myProjectile->ProjectileSetting.Effect, GetSurfaceType()); //to do NAME_None - bone radialDamage
 			
 		}
 	}
 
 	return ActualDamage;
 	
+}
+
+void AMy_TDS_GameProjectCharacter::CharDead_BP_Implementation()
+{
+	//BP
 }

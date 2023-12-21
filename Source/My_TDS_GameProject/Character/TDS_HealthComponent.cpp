@@ -46,13 +46,13 @@ void UTDS_HealthComponent::SetCurrentHealth(float NewHealth)
 void UTDS_HealthComponent::ChangeHealthValue(float ChangeValue)
 {
 	
-	if (Invul)
-	{
+	
+	
 		ChangeValue = ChangeValue * CoefDamage;
 
 		Health += ChangeValue;
 
-
+		OnHealthChange.Broadcast(Health, ChangeValue);
 
 
 		if (Health > 100.0f)
@@ -67,8 +67,8 @@ void UTDS_HealthComponent::ChangeHealthValue(float ChangeValue)
 
 			}
 		}
-		OnHealthChange.Broadcast(Health, ChangeValue);
-	}
+		
+	
 
 }
 

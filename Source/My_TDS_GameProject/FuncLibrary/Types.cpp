@@ -6,7 +6,7 @@
 #include "TDS_IGameActor.h"
 
 
-void UTypes::AddEffectBySurfaceType(AActor* TakeEffectActor, TSubclassOf<UTDS_StateEffect> AddEffectClass, EPhysicalSurface SurfaceType)
+void UTypes::AddEffectBySurfaceType(AActor* TakeEffectActor, FName NameBoneHit, TSubclassOf<UTDS_StateEffect> AddEffectClass, EPhysicalSurface SurfaceType)
 {
 	if (SurfaceType != EPhysicalSurface::SurfaceType_Default && TakeEffectActor && AddEffectClass)
 	{
@@ -59,7 +59,7 @@ void UTypes::AddEffectBySurfaceType(AActor* TakeEffectActor, TSubclassOf<UTDS_St
 						UTDS_StateEffect* NewEffect = NewObject<UTDS_StateEffect>(TakeEffectActor, AddEffectClass);
 						if (NewEffect)
 						{
-							NewEffect->InitObject(TakeEffectActor);
+							NewEffect->InitObject(TakeEffectActor, NameBoneHit);
 						}
 					}
 

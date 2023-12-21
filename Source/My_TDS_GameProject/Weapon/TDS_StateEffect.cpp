@@ -8,7 +8,7 @@
 
 #include "Kismet/GameplayStatics.h"
 
-bool UTDS_StateEffect::InitObject(AActor* Actor)
+bool UTDS_StateEffect::InitObject(AActor* Actor, FName NameBoneHit)
 {
 	myActor = Actor;
 
@@ -38,9 +38,9 @@ void UTDS_StateEffect::DestroyObject()
 	}
 }
 
-bool UTDS_StateEffect_ExecuteOnce::InitObject(AActor* Actor)
+bool UTDS_StateEffect_ExecuteOnce::InitObject(AActor* Actor, FName NameBoneHit)
 {
-	Super::InitObject(Actor);
+	Super::InitObject(Actor, NameBoneHit);
 	ExecuteOnce();
 	return true;
 }
@@ -64,19 +64,31 @@ void UTDS_StateEffect_ExecuteOnce::ExecuteOnce()
 	DestroyObject();
 }
 
-bool UTDS_StateEffect_ExecuteTimer::InitObject(AActor* Actor)
+bool UTDS_StateEffect_ExecuteTimer::InitObject(AActor* Actor, FName NameBoneHit)
 {
-	Super::InitObject(Actor);
+	Super::InitObject(Actor, NameBoneHit);
 
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle_EffectTimer, this, &UTDS_StateEffect_ExecuteTimer::DestroyObject, Timer, false);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle_ExecuteTimer, this, &UTDS_StateEffect_ExecuteTimer::Execute, RateTime, true);
 
 	if (ParticleEffect)
 	{
-		FName NameBoneToAttached;
+		FName NameBoneToAttached = NameBoneHit;
 		FVector Loc = FVector(0);
+	
+		USceneComponent* myMesh = Cast<USceneComponent>(myActor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
 
-		ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, myActor->GetRootComponent(), NameBoneToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+		if (myMesh)
+		{
+			ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, myMesh, NameBoneToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+
+		}
+		else
+		{
+			ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, myActor->GetRootComponent(), NameBoneToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+
+		}
+
 	}
 
 	return true;
@@ -102,9 +114,9 @@ void UTDS_StateEffect_ExecuteTimer::Execute()
 	}
 }
 
-bool UTDS_StateEffect_ExecuteInvulnerability::InitObject(AActor* Actor)
+bool UTDS_StateEffect_ExecuteInvulnerability::InitObject(AActor* Actor, FName NameBoneHit)
 {
-	Super::InitObject(Actor);
+	Super::InitObject(Actor, NameBoneHit);
 	return true;
 }
 

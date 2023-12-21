@@ -308,7 +308,7 @@ void AWeaponDefaults::Fire()
 					}
 
 				
-						UTypes::AddEffectBySurfaceType(Hit.GetActor(), ProjectileInfo.Effect, mySurfacetype);
+						UTypes::AddEffectBySurfaceType(Hit.GetActor(), Hit.BoneName, ProjectileInfo.Effect, mySurfacetype);
 						
 
 					//if (Hit.GetActor()->GetClass()->ImplementsInterface(UTDS_IGemeActor::StaticClass()))

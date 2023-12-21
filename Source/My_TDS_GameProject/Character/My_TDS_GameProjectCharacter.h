@@ -156,7 +156,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void AttackCharEvent(bool bIsFiring);
 	
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 		AWeaponDefaults* GetCurrentWeapon();
 	UFUNCTION(BlueprintCallable)
 		void InitWeapon(FName IdWeaponName, FAdditionalWeaponInfo WeaponAdditionalInfo, int32 NewCurrentIndexWeapon);
@@ -205,6 +205,11 @@ public:
 
 	void EnableRagDoll();
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintNativeEvent)
+		void CharDead_BP();
+
+
 
 
 };

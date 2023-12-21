@@ -23,28 +23,7 @@ void UTDS_Inventar::BeginPlay()
 
 	// ...
 	
-	for (int8 i = 0; i < WeaponSlots.Num(); i++)
-	{
-		UTDS_GameInstance* myGI = Cast <UTDS_GameInstance>(GetWorld()->GetGameInstance());
-			if (myGI)
-			{
-				if (!WeaponSlots[i].NameItem.IsNone())
-				{
-					FWeaponInfo Info;
-						if (myGI->GetWeaponInfoByName(WeaponSlots[i].NameItem, Info))
-							WeaponSlots[i].AdditionalInfo.Round = Info.MaxRound;
-						
-				}
-			}
-	}
-
-	MaxSlotsWeapon = WeaponSlots.Num();
-
-	if (WeaponSlots.IsValidIndex(0))
-	{
-		if (!WeaponSlots[0].NameItem.IsNone())
-			OnSwitchWeapon.Broadcast(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo, 0);
-	}
+	
 }
 
 
@@ -591,6 +570,47 @@ bool UTDS_Inventar::GetDropItemInfoFromInventory(int32 IndexSlot, FDropItem& Dro
 	}
 
 	return result;
+}
+
+TArray<FWeaponSlot> UTDS_Inventar::GetWeaponSlot()
+{
+	return WeaponSlots;
+}
+
+TArray<FAmmoSlot> UTDS_Inventar::GetAmmoSlot()
+{
+	return AmmoSlots;
+}
+
+void UTDS_Inventar::InitInventory(TArray<FWeaponSlot> NewWeaponSlotsInfo, TArray<FAmmoSlot> NewAmmoSlotsInfo)
+{
+
+	WeaponSlots = NewWeaponSlotsInfo;
+	AmmoSlots = NewAmmoSlotsInfo;
+
+	for (int8 i = 0; i < WeaponSlots.Num(); i++)
+	{
+		UTDS_GameInstance* myGI = Cast <UTDS_GameInstance>(GetWorld()->GetGameInstance());
+		if (myGI)
+		{
+			if (!WeaponSlots[i].NameItem.IsNone())
+			{
+				/*FWeaponInfo Info;
+				if (myGI->GetWeaponInfoByName(WeaponSlots[i].NameItem, Info))
+					WeaponSlots[i].AdditionalInfo.Round = Info.MaxRound;*/
+
+			}
+			
+		}
+	}
+
+	MaxSlotsWeapon = WeaponSlots.Num();
+
+	if (WeaponSlots.IsValidIndex(0))
+	{
+		if (!WeaponSlots[0].NameItem.IsNone())
+			OnSwitchWeapon.Broadcast(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo, 0);
+	}
 }
 
 #pragma optimize ("", on)
