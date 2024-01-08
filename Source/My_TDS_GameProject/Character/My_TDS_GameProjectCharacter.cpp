@@ -614,6 +614,11 @@ void AMy_TDS_GameProjectCharacter::AddEffect(UTDS_StateEffect* newEffect)
 	Effects.Add(newEffect);
 }
 
+bool AMy_TDS_GameProjectCharacter::GetIsAlive()
+{
+	return bIsAlive;
+}
+
 void AMy_TDS_GameProjectCharacter::CharDead()
 {
 	float TimeAnim = 0.0f;

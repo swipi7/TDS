@@ -48,6 +48,10 @@ void AProjectile_Bomborgmebt::TimerExplose(float Deltatime)
 
 void AProjectile_Bomborgmebt::BulletCollisionSphereHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (!TimerEnabled)
+	{
+		Explose();
+	}
 	Super::BulletCollisionSphereHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 }
 

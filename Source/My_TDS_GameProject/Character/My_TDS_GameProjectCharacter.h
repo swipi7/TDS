@@ -194,6 +194,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 		int32 CurrentIndexWeapon = 0;
 
+	UFUNCTION(BlueprintCallable, BluePrintPure)
+		bool GetIsAlive();
+
 	//Intarface
 	EPhysicalSurface GetSurfaceType() override;
 	TArray<UTDS_StateEffect*> GetAllCurrentEffects() override;
