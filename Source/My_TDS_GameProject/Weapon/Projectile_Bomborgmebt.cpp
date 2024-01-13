@@ -35,7 +35,7 @@ void AProjectile_Bomborgmebt::TimerExplose(float Deltatime)
 {
 	if (TimerEnabled)
 	{
-		if (TimerToExplose > TimerToExplose)
+		if (TimerToExplose > TimeToExplose)
 		{
 			Explose();
 		}
