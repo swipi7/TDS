@@ -8,6 +8,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "TDS_Inventar.h"
 #include "Weapon/TDS_StateEffect.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values
@@ -15,6 +16,8 @@ AWeaponDefaults::AWeaponDefaults()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	SetReplicates(true);
 
 	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	RootComponent = SceneComponent;
@@ -127,7 +130,7 @@ void AWeaponDefaults::ShellDropTick(float DeltaTime)
 		if (DropShellTimer < 0.0f)
 		{
 			DropShellTimer = false;
-			InitDropMesh(WeaponSetting.ShellBullets.DropMesh, WeaponSetting.ShellBullets.DropMeshOffset, WeaponSetting.ShellBullets.DropMeshImpulseDir, WeaponSetting.ShellBullets.DropMeshTime, WeaponSetting.ShellBullets.ImpulseRandomDispersion, WeaponSetting.ShellBullets.PowerImpulse,WeaponSetting.ShellBullets.CustomMass);
+			InitDropMesh_OnServer(WeaponSetting.ShellBullets.DropMesh, WeaponSetting.ShellBullets.DropMeshOffset, WeaponSetting.ShellBullets.DropMeshImpulseDir, WeaponSetting.ShellBullets.DropMeshTime, WeaponSetting.ShellBullets.ImpulseRandomDispersion, WeaponSetting.ShellBullets.PowerImpulse,WeaponSetting.ShellBullets.CustomMass);
 		}
 		else
 
@@ -143,7 +146,7 @@ void AWeaponDefaults::ClipDropTick(float DeltaTime)
 		if (DropClipTimer < 0.0f)
 		{
 			DropClipFlag = false;
-			InitDropMesh(WeaponSetting.ShellBullets.DropMesh, WeaponSetting.ShellBullets.DropMeshOffset, WeaponSetting.ShellBullets.DropMeshImpulseDir, WeaponSetting.ShellBullets.DropMeshTime, WeaponSetting.ShellBullets.ImpulseRandomDispersion, WeaponSetting.ShellBullets.PowerImpulse, WeaponSetting.ShellBullets.CustomMass);
+			InitDropMesh_OnServer(WeaponSetting.ShellBullets.DropMesh, WeaponSetting.ShellBullets.DropMeshOffset, WeaponSetting.ShellBullets.DropMeshImpulseDir, WeaponSetting.ShellBullets.DropMeshTime, WeaponSetting.ShellBullets.ImpulseRandomDispersion, WeaponSetting.ShellBullets.PowerImpulse, WeaponSetting.ShellBullets.CustomMass);
 		}
 		else
 
@@ -166,10 +169,10 @@ void AWeaponDefaults::WeaponInit()
 		UE_LOG(LogTemp, Warning, TEXT("WeaponInet 2"));
 
 	}
-	UpdateStateWeapon(EmovementState::Run_State);
+	UpdateStateWeapon_OnServer(EMovementState::Run_State);
 }
 
-void AWeaponDefaults::SetWeaponStateFire(bool bIsFire)
+void AWeaponDefaults::SetWeaponStateFire_OnServer_Implementation(bool bIsFire)
 {
 	if (CheckWeaponCanFire())
 		WeaponFiring = bIsFire;
@@ -190,24 +193,23 @@ FProjectileInfo AWeaponDefaults::GetProjectile()
 
 void AWeaponDefaults::Fire()
 {
+	//On Server 
+	
+
 	UAnimMontage* AnimToPlay = nullptr;
 	if (WeaponAiming)
 		AnimToPlay = WeaponSetting.AnimWeaponInfo.AnimCharFireAim;
 	else
 		AnimToPlay = WeaponSetting.AnimWeaponInfo.AnimCharFire;
-
-	if (WeaponSetting.AnimWeaponInfo.AnimWeaponFire
-		&& SkeletalMeshWeapon
-		&& SkeletalMeshWeapon->GetAnimInstance())//Bad Code? maybe best way init local variable or in func
+	if (WeaponSetting.AnimWeaponInfo.AnimWeaponFire)
 	{
-		SkeletalMeshWeapon->GetAnimInstance()->Montage_Play(WeaponSetting.AnimWeaponInfo.AnimWeaponFire);
+		AnimWeaponStart_Multicast(WeaponSetting.AnimWeaponInfo.AnimWeaponFire);
 	}
-
 	if (WeaponSetting.ShellBullets.DropMesh)
 	{
 		if (WeaponSetting.ShellBullets.DropMeshTime < 0.0f)
 		{
-			InitDropMesh(WeaponSetting.ShellBullets.DropMesh, WeaponSetting.ShellBullets.DropMeshOffset, WeaponSetting.ShellBullets.DropMeshImpulseDir, WeaponSetting.ShellBullets.DropMeshLifeTime, WeaponSetting.ShellBullets.ImpulseRandomDispersion, WeaponSetting.ShellBullets.PowerImpulse, WeaponSetting.ShellBullets.CustomMass);
+			InitDropMesh_OnServer(WeaponSetting.ShellBullets.DropMesh, WeaponSetting.ShellBullets.DropMeshOffset, WeaponSetting.ShellBullets.DropMeshImpulseDir, WeaponSetting.ShellBullets.DropMeshLifeTime, WeaponSetting.ShellBullets.ImpulseRandomDispersion, WeaponSetting.ShellBullets.PowerImpulse, WeaponSetting.ShellBullets.CustomMass);
 		}
 		else
 		{
@@ -223,8 +225,9 @@ void AWeaponDefaults::Fire()
 
 	OnWeaponFireStart.Broadcast(AnimToPlay);
 
-	UGameplayStatics::SpawnSoundAtLocation(GetWorld(), WeaponSetting.SoundFireWeapon, ShootLocation->GetComponentLocation());
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), WeaponSetting.EffectFireWeapon, ShootLocation->GetComponentTransform());
+	FXWeaponFire_Multicast(WeaponSetting.EffectFireWeapon, WeaponSetting.SoundFireWeapon);
+
+	
 
 	int8 NumberProjectile = GetNumberProjectileByShot();
 
@@ -265,6 +268,7 @@ void AWeaponDefaults::Fire()
 			}
 			else
 			{
+				//Multicast trace FX
 				FHitResult Hit;
 				TArray<AActor*> Actors;
 
@@ -337,44 +341,44 @@ void AWeaponDefaults::Fire()
 	}
 }
 
-void AWeaponDefaults::UpdateStateWeapon(EmovementState NewMovementState)
+void AWeaponDefaults::UpdateStateWeapon_OnServer_Implementation(EMovementState NewMovementState)
 {
 	//ToDo Dispersion
 	BlockFire = false;
 
 	switch (NewMovementState)
 	{
-	case EmovementState::Aim_State:
+	case EMovementState::Aim_State:
 
 		CurrentDispersionMax = WeaponSetting.DispersionWeapon.Aim_StateDispersionAimMax;
 		CurrentDispersionMin = WeaponSetting.DispersionWeapon.Aim_StateDispersionAimMin;
 		CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.Aim_StateDispersionAimRecoil;
 		CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
 		break;
-	case EmovementState::AimWalk_State:
+	case EMovementState::AimWalk_State:
 
 		CurrentDispersionMax = WeaponSetting.DispersionWeapon.AimWalk_StateDispersionAimMax;
 		CurrentDispersionMin = WeaponSetting.DispersionWeapon.AimWalk_StateDispersionAimMin;
 		CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.AimWalk_StateDispersionAimRecoil;
 		CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
 		break;
-	case EmovementState::Walk_State:
+	case EMovementState::Walk_State:
 
 		CurrentDispersionMax = WeaponSetting.DispersionWeapon.Walk_StateDispersionAimMax;
 		CurrentDispersionMin = WeaponSetting.DispersionWeapon.Walk_StateDispersionAimMin;
 		CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.Walk_StateDispersionAimRecoil;
 		CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
 		break;
-	case EmovementState::Run_State:
+	case EMovementState::Run_State:
 
 		CurrentDispersionMax = WeaponSetting.DispersionWeapon.Run_StateDispersionAimMax;
 		CurrentDispersionMin = WeaponSetting.DispersionWeapon.Run_StateDispersionAimMin;
 		CurrentDispersionRecoil = WeaponSetting.DispersionWeapon.Run_StateDispersionAimRecoil;
 		CurrentDispersionReduction = WeaponSetting.DispersionWeapon.Aim_StateDispersionReduction;
 		break;
-	case EmovementState::SprintRun_State:
+	case EMovementState::SprintRun_State:
 		BlockFire = true;
-		SetWeaponStateFire(false);//set fire trigger to false
+		SetWeaponStateFire_OnServer(false);//set fire trigger to false
 		//Block Fire
 		break;
 	default:
@@ -470,7 +474,8 @@ void AWeaponDefaults::InitReload()
 		&& SkeletalMeshWeapon
 		&& SkeletalMeshWeapon->GetAnimInstance())//Bad Code? maybe best way init local variable or in func
 	{
-		SkeletalMeshWeapon->GetAnimInstance()->Montage_Play(AnimWeaponToPlay);
+		//SkeletalMeshWeapon->GetAnimInstance()->Montage_Play(AnimWeaponToPlay);
+		AnimWeaponStart_Multicast(AnimWeaponToPlay);
 	}
 
 
@@ -513,7 +518,7 @@ void AWeaponDefaults::FinishReload()
 
 }
 
-void AWeaponDefaults::InitDropMesh (UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh, float ImpulseRandomDispersion, float PowerImpulse, float CustomMass)
+void AWeaponDefaults::InitDropMesh_OnServer_Implementation(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh, float ImpulseRandomDispersion, float PowerImpulse, float CustomMass)
 {
 	if (DropMesh)
 	{
@@ -524,53 +529,11 @@ void AWeaponDefaults::InitDropMesh (UStaticMesh* DropMesh, FTransform Offset, FV
 		Transform.SetScale3D(Offset.GetScale3D());
 
 		Transform.SetRotation((GetActorRotation() + Offset.Rotator()).Quaternion());
-		AStaticMeshActor* NewActor = nullptr;
 		
-		FActorSpawnParameters Param;
-		Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		Param.Owner = this;
-		NewActor = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), Transform, Param);
 
-		if (NewActor && NewActor->GetStaticMeshComponent())
-		{
-			NewActor->GetStaticMeshComponent()->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
-			NewActor->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		ShellDropFire_Multicast(DropMesh, Transform, DropImpulseDirection, LifeTimeMesh, ImpulseRandomDispersion, PowerImpulse, CustomMass, LocalDir);
 
-			//Set Parametr for new Actor
-			NewActor->SetActorTickEnabled(false);
-			NewActor->InitialLifeSpan = LifeTimeMesh;
-
-			NewActor->GetStaticMeshComponent()->Mobility = EComponentMobility::Movable;
-			NewActor->GetStaticMeshComponent()->SetSimulatePhysics(true);
-			NewActor->GetStaticMeshComponent()->SetStaticMesh(DropMesh);
-
-
-
-				NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
-				NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_EngineTraceChannel2, ECollisionResponse::ECR_Ignore);
-				NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_Pawn,ECollisionResponse::ECR_Ignore);
-				NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_WorldStatic, ECollisionResponse::ECR_Block);
-				NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECollisionResponse::ECR_Block);
-				NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_PhysicsBody, ECollisionResponse::ECR_Block);
-
-				if (CustomMass > 0.0f)
-				{
-					NewActor->GetStaticMeshComponent()->SetMassOverrideInKg(NAME_None, CustomMass, true);
-				}
-
-				if (!DropImpulseDirection.IsNearlyZero())
-				{
-					FVector FinalDir;
-					LocalDir = LocalDir + (DropImpulseDirection * 1000.0f);
-
-					if (!FMath::IsNearlyZero(ImpulseRandomDispersion))
-						FinalDir += UKismetMathLibrary::RandomUnitVectorInConeInDegrees(LocalDir, ImpulseRandomDispersion);
-					FinalDir.GetSafeNormal(0.0001f);
-
-					NewActor->GetStaticMeshComponent()->AddImpulse(FinalDir* PowerImpulse);
-				}
-
-		}
+		
 
 
 	}
@@ -605,6 +568,87 @@ bool AWeaponDefaults::CheckCanWeaponReload()
 	}
 	return result;
 }
+
+void AWeaponDefaults::FXWeaponFire_Multicast_Implementation(UParticleSystem* FxFire, USoundBase* SoundFire)
+{
+	if (SoundFire)
+	{
+		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), SoundFire, ShootLocation->GetComponentLocation());
+
+	}
+	if (FxFire)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FxFire, ShootLocation->GetComponentTransform());
+	}
+}
+
+void AWeaponDefaults::ShellDropFire_Multicast_Implementation(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh, float ImpulseRandomDispersion, float PowerImpulse, float CustomMass, FVector LocalDir)
+{
+	AStaticMeshActor* NewActor = nullptr;
+
+	FActorSpawnParameters Param;
+	Param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	Param.Owner = this;
+
+	NewActor = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), Offset, Param);
+
+	if (NewActor && NewActor->GetStaticMeshComponent())
+	{
+		NewActor->GetStaticMeshComponent()->SetCollisionProfileName(TEXT("IgnoreOnlyPawn"));
+		NewActor->GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+
+		//Set Parametr for new Actor
+		NewActor->SetActorTickEnabled(false);
+		NewActor->InitialLifeSpan = LifeTimeMesh;
+
+		NewActor->GetStaticMeshComponent()->Mobility = EComponentMobility::Movable;
+		NewActor->GetStaticMeshComponent()->SetSimulatePhysics(true);
+		NewActor->GetStaticMeshComponent()->SetStaticMesh(DropMesh);
+
+
+
+		NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+		NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_EngineTraceChannel2, ECollisionResponse::ECR_Ignore);
+		NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Ignore);
+		NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_WorldStatic, ECollisionResponse::ECR_Block);
+		NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECollisionResponse::ECR_Block);
+		NewActor->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECC_PhysicsBody, ECollisionResponse::ECR_Block);
+
+		if (CustomMass > 0.0f)
+		{
+			NewActor->GetStaticMeshComponent()->SetMassOverrideInKg(NAME_None, CustomMass, true);
+		}
+
+		if (!DropImpulseDirection.IsNearlyZero())
+		{
+			FVector FinalDir;
+			LocalDir = LocalDir + (DropImpulseDirection * 1000.0f);
+
+			if (!FMath::IsNearlyZero(ImpulseRandomDispersion))
+				FinalDir += UKismetMathLibrary::RandomUnitVectorInConeInDegrees(LocalDir, ImpulseRandomDispersion);
+			FinalDir.GetSafeNormal(0.0001f);
+
+			NewActor->GetStaticMeshComponent()->AddImpulse(FinalDir * PowerImpulse);
+		}
+
+	}
+}
+
+void AWeaponDefaults::AnimWeaponStart_Multicast_Implementation(UAnimMontage* Anim)
+{
+	if (Anim
+		&& SkeletalMeshWeapon
+		&& SkeletalMeshWeapon->GetAnimInstance())//Bad Code? maybe best way init local variable or in func
+	{
+		SkeletalMeshWeapon->GetAnimInstance()->Montage_Play(Anim);
+	}
+}
+
+void AWeaponDefaults::UpdateWeaponByCharacterMovementState_OnServer_Implementation(FVector NewShootEndLocation, bool NewShouldReduceDispersion)
+{
+	ShootEndLocation = NewShootEndLocation;
+	ShouldReduceDispersion = NewShouldReduceDispersion;
+}
  
 
 int8 AWeaponDefaults::GetAviableAmmoForReload()
@@ -626,5 +670,11 @@ int8 AWeaponDefaults::GetAviableAmmoForReload()
 	return AviableAmmoForWeapon;
 }
 
+void AWeaponDefaults::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(AWeaponDefaults, AdditionalWeaponInfo);
+	
+}
 

@@ -11,6 +11,8 @@
 #include "My_TDS_GameProject/ProjectileDefault.h" 
 #include "WeaponDefaults.generated.h"
 
+
+
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponFireStart);//ToDo Delegate on event weapon fire - Anim char, state char...
 //class UAnimMontage;
 
@@ -44,7 +46,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FireLogic")
 		FWeaponInfo WeaponSetting;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Weapon Info")
 		FAdditionalWeaponInfo AdditionalWeaponInfo;
 
 protected:
@@ -73,16 +75,16 @@ public:
 
 		//bool BlockFire = false;
 
-	UFUNCTION(BlueprintCallable)
-		void SetWeaponStateFire(bool bIsFire);
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+		void SetWeaponStateFire_OnServer(bool bIsFire);
 
 	bool CheckWeaponCanFire();
 
 	FProjectileInfo GetProjectile();
 
 	void Fire();
-
-	void UpdateStateWeapon(EmovementState NewMovementState);
+	UFUNCTION(Server, Reliable)
+	void UpdateStateWeapon_OnServer(EMovementState NewMovementState);
 	void ChangeDispersionByShot();
 	float GetCurrentDispersion() const;
 	FVector ApplyDispersionToShoot(FVector DirectionShoot)const;
@@ -101,6 +103,7 @@ public:
 	//flags
 	bool BlockFire = false;
 	//Dispersion
+	UPROPERTY(Replicated)
 	bool ShouldReduceDispersion = false;
 	float CurrentDispersion = 0.0f;
 	float CurrentDispersionMax = 1.0f;
@@ -117,6 +120,8 @@ public:
 	bool DropShellFlag = false;
 	float DropShellTimer = -1.f;
 
+
+	UPROPERTY(Replicated)
 	FVector ShootEndLocation = FVector(0);
 
 	UFUNCTION(BlueprintCallable)
@@ -124,8 +129,8 @@ public:
 		void InitReload();
 		void FinishReload();
 
-	UFUNCTION()
-		void InitDropMesh(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh, float ImpulseRandomDispersion, float PowerImpulse, float CastomMesh);
+	UFUNCTION(Server, Reliable)
+		void InitDropMesh_OnServer(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh, float ImpulseRandomDispersion, float PowerImpulse, float CastomMesh);
 
 	UFUNCTION()
 		void CancelReload();
@@ -140,6 +145,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 		float SizeVectorToChangeShootDirectionLogic = 100.0f;
 
+	UFUNCTION(Server, Unreliable)
+		void UpdateWeaponByCharacterMovementState_OnServer(FVector NewShootEndLocation, bool NewShouldReduceDispersion);
+
+	UFUNCTION(NetMulticast, Unreliable)
+		void AnimWeaponStart_Multicast(UAnimMontage* Anim);
+	UFUNCTION(NetMulticast, Unreliable)
+		void ShellDropFire_Multicast(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh, float ImpulseRandomDispersion, float PowerImpulse, float CustomMass, FVector LocalDir);
+
+
+	UFUNCTION(NetMulticast, Unreliable)
+		void FXWeaponFire_Multicast(UParticleSystem* FxFire, USoundBase* SoundFire);
 
 
 };

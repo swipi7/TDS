@@ -9,7 +9,7 @@
 #include "Types.generated.h"
 
 UENUM(BlueprintType)
-enum class EmovementState : uint8
+enum class EMovementState : uint8
 {
 	Aim_State UMETA(DisplayName = "Aim State"),
 	AimWalk_State UMETA(DisplayName = "AimWalk State"),
