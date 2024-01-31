@@ -4,6 +4,11 @@
 #include "TDS_EnviromentStructure.h"
 #include "Materials/MaterialInterface.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/ActorChannel.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Net/UnrealNetwork.h"
+
 
 // Sets default values
 ATDS_EnviromentStructure::ATDS_EnviromentStructure()
@@ -11,6 +16,7 @@ ATDS_EnviromentStructure::ATDS_EnviromentStructure()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
@@ -52,9 +58,92 @@ TArray<UTDS_StateEffect*> ATDS_EnviromentStructure::GetAllCurrentEffects()
 void ATDS_EnviromentStructure::RemoveEffect(UTDS_StateEffect* RemoveEffect)
 {
 	Effects.Remove(RemoveEffect);
+
+	SwitchEffect(RemoveEffect, false);
+	EffectRemove = RemoveEffect;
 }
 
 void ATDS_EnviromentStructure::AddEffect(UTDS_StateEffect* newEffect)
 {
 	Effects.Add(newEffect);
+
+	SwitchEffect(newEffect, true);
+	EffectAdd = newEffect;
+}
+
+void ATDS_EnviromentStructure::EffectAdd_OnRep()
+{
+	if (EffectAdd)
+	{
+		SwitchEffect(EffectAdd, true);
+	}
+}
+
+void ATDS_EnviromentStructure::EffectRemove_OnRep()
+{
+	if (EffectRemove)
+	{
+		SwitchEffect(EffectAdd, false);
+	}
+}
+
+void ATDS_EnviromentStructure::SwitchEffect(UTDS_StateEffect* Effect, bool bIsAdd)
+{
+	if (bIsAdd)
+	{
+		if (Effect && Effect->ParticleEffect)
+		{
+			FName NameBoneToAttached = NAME_None;
+			FVector Loc = OffsetEffect;
+
+			USceneComponent* mySceneComp = GetRootComponent();
+			if (mySceneComp)
+			{
+				UParticleSystemComponent* newParticleSystem = UGameplayStatics::SpawnEmitterAttached(Effect->ParticleEffect, mySceneComp, NameBoneToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+				ParticleSystemEffects.Add(newParticleSystem);
+			}
+		}
+	}
+	else
+	{
+		int32 i = 0;
+		bool bIsFind = false;
+		while (i < ParticleSystemEffects.Num(), !bIsFind)
+		{
+			if (ParticleSystemEffects[i]->Template && Effect->ParticleEffect && Effect->ParticleEffect == ParticleSystemEffects[i]->Template)
+			{
+				bIsFind = true;
+				ParticleSystemEffects[i]->DeactivateSystem();
+				ParticleSystemEffects[i]->DestroyComponent();
+				ParticleSystemEffects.RemoveAt(i);
+			}
+			i++;
+		}
+	}
+}
+
+
+
+bool ATDS_EnviromentStructure::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool Wrote = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+	for (int32 i = 0; i < Effects.Num(); i++)
+	{
+		if (Effects[i])
+		{
+			Wrote |= Channel->ReplicateSubobject(Effects[i], *Bunch, *RepFlags);
+		}
+	}
+	return Wrote;
+}
+
+void ATDS_EnviromentStructure::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+
+	DOREPLIFETIME(ATDS_EnviromentStructure, Effects);
+	DOREPLIFETIME(ATDS_EnviromentStructure, EffectAdd);
+	DOREPLIFETIME(ATDS_EnviromentStructure, EffectRemove);
 }

@@ -69,7 +69,7 @@ public:
 	//flags
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FireLogic")
 		bool WeaponFiring = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FireLogic")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "FireLogic")
 		bool WeaponReloading = false;
 		bool WeaponAiming = false;
 

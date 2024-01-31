@@ -22,6 +22,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlag) override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -35,6 +37,28 @@ public:
 	void AddEffect(UTDS_StateEffect* newEffect)override;
 
 	//Effect
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Setting")
 		TArray<UTDS_StateEffect*> Effects;
+
+	
+	UPROPERTY(ReplicatedUsing = EffectAdd_OnRep)
+		UTDS_StateEffect* EffectAdd = nullptr;
+
+	UPROPERTY(ReplicatedUsing = EffectRemove_OnRep)
+		UTDS_StateEffect* EffectRemove = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dbag")
+		TArray<UParticleSystemComponent*> ParticleSystemEffects;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting")
+	FVector OffsetEffect = FVector(0);
+
+	UFUNCTION()
+		void EffectAdd_OnRep();
+	UFUNCTION()
+		void EffectRemove_OnRep();
+
+	UFUNCTION()
+		void SwitchEffect(UTDS_StateEffect* Effect, bool bIsAdd);
+
+
 };

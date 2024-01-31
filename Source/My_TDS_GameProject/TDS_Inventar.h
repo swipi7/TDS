@@ -46,10 +46,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Weapons")
+	UPROPERTY(Replicated, EditAnywhere, BluePrintReadWrite, Category = "Weapons")
 		TArray<FWeaponSlot> WeaponSlots;
 
-	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Weapons")
+	UPROPERTY(Replicated, EditAnywhere, BluePrintReadWrite, Category = "Weapons")
 		TArray<FAmmoSlot> AmmoSlots;
 
 	UPROPERTY(EditAnywhere, BluePrintReadWrite, Category = "Weapons")
@@ -74,8 +74,8 @@ public:
 		bool CheckCanTakeWeapon(int32& FreeSlot);
 	UFUNCTION(BlueprintCallable, Category = "Interface")
 		bool SwitchWeaponToInventory(FWeaponSlot NewWeapon, int32 IndexSlot, int32 CurrentIndexWeaponChar, FDropItem& DropItemInfo);
-	UFUNCTION(BlueprintCallable, Category = "Interface")
-		bool TryGetWeaponToInventory(FWeaponSlot NewWeapon);
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Interface")
+		void TryGetWeaponToInventory_OnServer(AActor* PickUpActor, FWeaponSlot NewWeapon);
 
 	UFUNCTION(BlueprintCallable, Category = "Interface")
 		bool GetDropItemInfoFromInventory(int32 IndexSlot, FDropItem& DropItemInfo);
@@ -88,6 +88,12 @@ public:
 
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Inventar")
 		void InitInventory_OnServer(const TArray<FWeaponSlot>& NewWeaponSlotsInfo, const TArray<FAmmoSlot>& NewAmmoSlotsInfo);
+
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Inventar")
+		void AmmoChangeEvent_Multicast(EWeaponType TypeWeapon, int32 Cout);
+
+	UFUNCTION(Server, Reliable)
+		void SwitchWeaponEvent_OnServer(FName WeaponName, FAdditionalWeaponInfo AdditionalInfo, int32 IndexSlot);
 
 
 };

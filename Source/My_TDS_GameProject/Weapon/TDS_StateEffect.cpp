@@ -7,10 +7,12 @@
 #include "Character/My_TDS_GameProjectCharacter.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 bool UTDS_StateEffect::InitObject(AActor* Actor, FName NameBoneHit)
 {
 	myActor = Actor;
+	NameBone = NameBoneHit;
 
 	ITDS_IGameActor* myInterface = Cast<ITDS_IGameActor>(myActor);
 	if (myInterface)
@@ -28,7 +30,7 @@ void UTDS_StateEffect::DestroyObject()
 	ITDS_IGameActor* myInterface = Cast<ITDS_IGameActor>(myActor);
 	if (myInterface)
 	{
-		myInterface->RemoveEffect(this);
+		myInterface->RemoveEffect( this);
 	}
 
 	myActor = nullptr;
@@ -57,7 +59,7 @@ void UTDS_StateEffect_ExecuteOnce::ExecuteOnce()
 		UTDS_HealthComponent* myHeathComp = Cast<UTDS_HealthComponent>(myActor->GetComponentByClass(UTDS_HealthComponent::StaticClass()));
 		if (myHeathComp)
 		{
-			myHeathComp->ChangeHealthValue(Power);
+			myHeathComp->ChangeHealthValue_OnServer(Power);
 		}
 	}
 
@@ -67,37 +69,45 @@ void UTDS_StateEffect_ExecuteOnce::ExecuteOnce()
 bool UTDS_StateEffect_ExecuteTimer::InitObject(AActor* Actor, FName NameBoneHit)
 {
 	Super::InitObject(Actor, NameBoneHit);
+	
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_EffectTimer, this, &UTDS_StateEffect_ExecuteTimer::DestroyObject, Timer, false);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_ExecuteTimer, this, &UTDS_StateEffect_ExecuteTimer::Execute, RateTime, true);
+	}
 
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle_EffectTimer, this, &UTDS_StateEffect_ExecuteTimer::DestroyObject, Timer, false);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle_ExecuteTimer, this, &UTDS_StateEffect_ExecuteTimer::Execute, RateTime, true);
-
-	if (ParticleEffect)
+	/*if (ParticleEffect)
 	{
 		FName NameBoneToAttached = NameBoneHit;
 		FVector Loc = FVector(0);
 	
-		USceneComponent* myMesh = Cast<USceneComponent>(myActor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));
+		USceneComponent* myMesh = Cast<USceneComponent>(myActor->GetComponentByClass(USkeletalMeshComponent::StaticClass()));*/
 
-		if (myMesh)
-		{
-			ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, myMesh, NameBoneToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+	//	if (myMesh)
+	//	{
+	//		ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, myMesh, NameBoneToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
 
-		}
-		else
-		{
-			ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, myActor->GetRootComponent(), NameBoneToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+	//	}
+	//	else
+	//	{
+	//		ParticleEmitter = UGameplayStatics::SpawnEmitterAttached(ParticleEffect, myActor->GetRootComponent(), NameBoneToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
 
-		}
+	//	}
 
-	}
+	//}
 
 	return true;
 }
 
 void UTDS_StateEffect_ExecuteTimer::DestroyObject()
 {
-	ParticleEmitter->DestroyComponent();
-	ParticleEmitter = nullptr;
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
+
+	//ParticleEmitter->DestroyComponent();
+	//ParticleEmitter = nullptr;
 	Super::DestroyObject();
 }
 
@@ -109,7 +119,7 @@ void UTDS_StateEffect_ExecuteTimer::Execute()
 		UTDS_HealthComponent* myHeathComp = Cast<UTDS_HealthComponent>(myActor->GetComponentByClass(UTDS_HealthComponent::StaticClass()));
 		if (myHeathComp)
 		{
-			myHeathComp->ChangeHealthValue(Power);
+			myHeathComp->ChangeHealthValue_OnServer(Power);
 		}
 	}
 }
@@ -140,5 +150,14 @@ void UTDS_StateEffect_ExecuteInvulnerability::ExecuteInvul()
 		}
 	
 	}
+}
+
+void UTDS_StateEffect::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+
+	DOREPLIFETIME(UTDS_StateEffect, NameBone);
+	
 }
 

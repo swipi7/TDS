@@ -3,7 +3,8 @@
 
 #include "Character/MyTDS_CharacterHealthComponent.h"
 
-void UMyTDS_CharacterHealthComponent::ChangeHealthValue(float ChangeValue)
+
+void UMyTDS_CharacterHealthComponent::ChangeHealthValue_OnServer(float ChangeValue)
 {
 
 	float CurrentDamage = ChangeValue * CoefDamage;
@@ -20,7 +21,7 @@ void UMyTDS_CharacterHealthComponent::ChangeHealthValue(float ChangeValue)
 	}
 	else
 	{
-		Super::ChangeHealthValue(ChangeValue);
+		Super::ChangeHealthValue_OnServer(ChangeValue);
 	}
 	
 
@@ -38,7 +39,8 @@ void UMyTDS_CharacterHealthComponent::ChangeShieldValue(float ChangeValue)
 {
 	Shield += ChangeValue;
 	
-	OnShieldChange.Broadcast(Shield, ChangeValue);
+	//OnShieldChange.Broadcast(Shield, ChangeValue);
+	ShieldChangeEvent_Multicast(Shield, ChangeValue);
 
 	if (Shield > 100.0f)
 	{
@@ -87,10 +89,17 @@ void UMyTDS_CharacterHealthComponent::RecoveryShield()
 	{
 		Shield = tmp;
 	}
-	OnShieldChange.Broadcast(Shield, ShieldRecoverValue);
+	//OnShieldChange.Broadcast(Shield, ShieldRecoverValue);
+	ShieldChangeEvent_Multicast(Shield, ShieldRecoverValue);
 }
 
 float UMyTDS_CharacterHealthComponent::GetShieldValue()
 {
 	return Shield;
+}
+
+void UMyTDS_CharacterHealthComponent::ShieldChangeEvent_Multicast_Implementation(float newShield, float Damage)
+{
+	OnShieldChange.Broadcast(newShield, Damage);
+
 }

@@ -3,6 +3,7 @@
 
 #include "TDS_Inventar.h"
 #include "TDS_GameInstance.h"
+#include "Net/UnrealNetwork.h"
 #pragma optimize ("", off)
 
 // Sets default values for this component's properties
@@ -12,6 +13,7 @@ UTDS_Inventar::UTDS_Inventar()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	SetIsReplicatedByDefault(true);
 	// ...
 }
 
@@ -361,7 +363,8 @@ bool UTDS_Inventar::SwitchWeaponToIndex(int32 ChangeToIndex, int32 OldIndex, FAd
 	if (bIsSuccess)
 	{
 		SetAdditionalInfoWeapon(OldIndex, OldInfo);
-		OnSwitchWeapon.Broadcast(NewIdWeapon, NewAdditionalInfo, NewCurrentIndex);
+		//OnSwitchWeapon.Broadcast(NewIdWeapon, NewAdditionalInfo, NewCurrentIndex);
+		SwitchWeaponEvent_OnServer(NewIdWeapon, NewAdditionalInfo, NewCurrentIndex);
 		//OnWeaponAmmoAviable.Broadcast()
 	}
 
@@ -454,8 +457,9 @@ void UTDS_Inventar::AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 CoutChange
 			if (AmmoSlots[i].Cout > AmmoSlots[i].MaxCout)
 				AmmoSlots[i].Cout = AmmoSlots[i].MaxCout;
 
-			//OnAmmoChange.Broadcast(EWeaponType::RocketLauncher, 32);
-			OnAmmoChange.Broadcast(AmmoSlots[i].WeaponType, AmmoSlots[i].Cout);
+			AmmoChangeEvent_Multicast(AmmoSlots[i].WeaponType, AmmoSlots[i].Cout);
+			
+			//OnAmmoChange.Broadcast(AmmoSlots[i].WeaponType, AmmoSlots[i].Cout);
 
 			bIsFind = true;
 
@@ -537,7 +541,7 @@ bool UTDS_Inventar::SwitchWeaponToInventory(FWeaponSlot NewWeapon, int32 IndexSl
 	return result;
 }
 
-bool UTDS_Inventar::TryGetWeaponToInventory(FWeaponSlot NewWeapon)
+void UTDS_Inventar::TryGetWeaponToInventory_OnServer_Implementation(AActor* PickUpActor, FWeaponSlot NewWeapon)
 {
 	int32 indexSlot = -1;
 	if (CheckCanTakeWeapon(indexSlot))
@@ -547,10 +551,14 @@ bool UTDS_Inventar::TryGetWeaponToInventory(FWeaponSlot NewWeapon)
 			WeaponSlots[indexSlot] = NewWeapon;
 
 			OnUpdateWeaponSlots.Broadcast(indexSlot, NewWeapon);
-			return true;
+			
+			if (PickUpActor)
+			{
+				PickUpActor->Destroy();
+			}
+
 		}
 	}
-	return false;
 }
 
 bool UTDS_Inventar::GetDropItemInfoFromInventory(int32 IndexSlot, FDropItem& DropItemInfo)
@@ -582,6 +590,16 @@ TArray<FAmmoSlot> UTDS_Inventar::GetAmmoSlot()
 	return AmmoSlots;
 }
 
+void UTDS_Inventar::SwitchWeaponEvent_OnServer_Implementation(FName WeaponName, FAdditionalWeaponInfo AdditionalInfo, int32 IndexSlot)
+{
+	OnSwitchWeapon.Broadcast(WeaponName, AdditionalInfo, IndexSlot);
+}
+
+void UTDS_Inventar::AmmoChangeEvent_Multicast_Implementation(EWeaponType TypeWeapon, int32 Cout)
+{
+	OnAmmoChange.Broadcast(TypeWeapon, Cout);
+}
+
 void UTDS_Inventar::InitInventory_OnServer_Implementation(const TArray<FWeaponSlot>& NewWeaponSlotsInfo, const TArray<FAmmoSlot>& NewAmmoSlotsInfo)
 {
 
@@ -597,6 +615,17 @@ void UTDS_Inventar::InitInventory_OnServer_Implementation(const TArray<FWeaponSl
 		if (!WeaponSlots[0].NameItem.IsNone())
 			OnSwitchWeapon.Broadcast(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo, 0);
 	}
+}
+
+void UTDS_Inventar::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+
+	DOREPLIFETIME(UTDS_Inventar, WeaponSlots);
+	DOREPLIFETIME(UTDS_Inventar, AmmoSlots);
+
+
 }
 
 #pragma optimize ("", on)

@@ -18,6 +18,8 @@
 #include "ProjectileDefault.h"
 #include "My_TDS_GameProject.h"
 #include "Net/UnrealNetwork.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Engine/ActorChannel.h"
 
 
 AMy_TDS_GameProjectCharacter::AMy_TDS_GameProjectCharacter()
@@ -449,9 +451,9 @@ void AMy_TDS_GameProjectCharacter::TryReloadWeapon()
 {
 	if (bIsAlive && CurrentWeapon && !CurrentWeapon->WeaponReloading)
 	{
-		if (CurrentWeapon->GetWeaponRound() < CurrentWeapon->WeaponSetting.MaxRound && CurrentWeapon->CheckCanWeaponReload())
-			CurrentWeapon->InitReload();
-
+		TryReloadWeapon_OnServer();
+		
+		
 		//UE_LOG(LogTemp, Warning, TEXT("WeaponSpawn"));
 	}
 }
@@ -637,11 +639,17 @@ TArray<UTDS_StateEffect*>  AMy_TDS_GameProjectCharacter::GetAllCurrentEffects()
 void AMy_TDS_GameProjectCharacter::RemoveEffect(UTDS_StateEffect* RemoveEffect)
 {
 	Effects.Remove(RemoveEffect);
+
+	SwitchEffect(RemoveEffect, false);
+	EffectRemove = RemoveEffect;
 }
 
 void AMy_TDS_GameProjectCharacter::AddEffect(UTDS_StateEffect* newEffect)
 {
 	Effects.Add(newEffect);
+
+	SwitchEffect(newEffect, true);
+	EffectAdd = newEffect;
 }
 
 bool AMy_TDS_GameProjectCharacter::GetIsAlive()
@@ -654,6 +662,15 @@ EMovementState AMy_TDS_GameProjectCharacter::GetMovementState()
 	return MovementState;
 }
 
+void AMy_TDS_GameProjectCharacter::PlayAnim_Multicast_Implementation(UAnimMontage* Anim)
+{
+	if (GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(Anim);
+	}
+}
+
+
 void AMy_TDS_GameProjectCharacter::CharDead()
 {
 	float TimeAnim = 0.0f;
@@ -661,7 +678,8 @@ void AMy_TDS_GameProjectCharacter::CharDead()
 	if (DeadsAnim.IsValidIndex(rnd) && DeadsAnim[rnd] && GetMesh() && GetMesh()->GetAnimInstance())
 	{
 		TimeAnim = DeadsAnim[rnd]->GetPlayLength();
-		GetMesh()->GetAnimInstance()->Montage_Play(DeadsAnim[rnd]);
+		//GetMesh()->GetAnimInstance()->Montage_Play(DeadsAnim[rnd]);
+		PlayAnim_Multicast(DeadsAnim[rnd]);
 	}
 
 	bIsAlive = false;
@@ -705,7 +723,7 @@ float AMy_TDS_GameProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent 
 	if (bIsAlive && !Invul)
 	{	
 		UE_LOG(LogTemp, Warning, TEXT("Damage"));
-			HealthComponent->ChangeHealthValue(-DamageAmount);
+			HealthComponent->ChangeHealthValue_OnServer(-DamageAmount);
 	
 	}
 
@@ -751,16 +769,92 @@ void AMy_TDS_GameProjectCharacter::SetMovementState_Multicast_Implementation(EMo
 
 }
 
+void AMy_TDS_GameProjectCharacter::TryReloadWeapon_OnServer_Implementation()
+{
+	if (CurrentWeapon->GetWeaponRound() < CurrentWeapon->WeaponSetting.MaxRound && CurrentWeapon->CheckCanWeaponReload())
+		CurrentWeapon->InitReload();
+
+}
+
+
 void AMy_TDS_GameProjectCharacter::CharDead_BP_Implementation()
 {
 	//BP
 }
 
+void AMy_TDS_GameProjectCharacter::EffectAdd_OnRep()
+{
+	if (EffectAdd)
+	{
+		SwitchEffect(EffectAdd, false);
+	}
+}
+
+void AMy_TDS_GameProjectCharacter::EffectRemove_OnRep()
+{
+	if (EffectRemove)
+	{
+		SwitchEffect(EffectRemove, false);
+	}
+}
+
+void AMy_TDS_GameProjectCharacter::SwitchEffect(UTDS_StateEffect* Effect, bool bIsAdd)
+{
+	if (bIsAdd)
+	{
+		if (Effect && Effect->ParticleEffect)
+		{
+			FName NameBoneToAttached = Effect->NameBone;
+			FVector Loc = FVector(0);
+
+			USkeletalMeshComponent* myMesh = GetMesh();
+			if (myMesh)
+			{
+				UParticleSystemComponent* newParticleSystem = UGameplayStatics::SpawnEmitterAttached(Effect->ParticleEffect, myMesh, NameBoneToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+				ParticleSystemEffects.Add(newParticleSystem);
+			}
+		}
+	}
+	else
+	{
+		int32 i = 0;
+		bool bIsFind = false;
+		while (i < ParticleSystemEffects.Num(), !bIsFind)
+		{
+			if (ParticleSystemEffects[i]->Template && Effect->ParticleEffect && Effect->ParticleEffect == ParticleSystemEffects[i]->Template)
+			{
+				bIsFind = true;
+				ParticleSystemEffects[i]->DeactivateSystem();
+				ParticleSystemEffects[i]->DestroyComponent();
+				ParticleSystemEffects.RemoveAt(i);
+			}
+			i++;
+		}
+	}
+}
+
+bool AMy_TDS_GameProjectCharacter::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
+{
+	bool Wrote = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
+
+	for (int32 i = 0; i < Effects.Num(); i++)
+	{
+		if (Effects[i])
+		{
+			Wrote |= Channel->ReplicateSubobject(Effects[i], *Bunch, *RepFlags);
+		}
+	}
+	return Wrote;
+}
 
 void AMy_TDS_GameProjectCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	
+	
 	DOREPLIFETIME(AMy_TDS_GameProjectCharacter, MovementState);
 	DOREPLIFETIME(AMy_TDS_GameProjectCharacter, CurrentWeapon);
+	DOREPLIFETIME(AMy_TDS_GameProjectCharacter, Effects);
+	DOREPLIFETIME(AMy_TDS_GameProjectCharacter, EffectAdd);
+	DOREPLIFETIME(AMy_TDS_GameProjectCharacter, EffectRemove);
 }

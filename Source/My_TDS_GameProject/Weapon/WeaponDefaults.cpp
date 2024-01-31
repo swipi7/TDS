@@ -50,11 +50,16 @@ void AWeaponDefaults::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FireTick(DeltaTime);
-	ReloadTick(DeltaTime);
-	DispersionTick(DeltaTime);
-	ClipDropTick(DeltaTime);
-	ShellDropTick(DeltaTime);
+	if (HasAuthority())
+	{
+		FireTick(DeltaTime);
+		ReloadTick(DeltaTime);
+		DispersionTick(DeltaTime);
+		ClipDropTick(DeltaTime);
+		ShellDropTick(DeltaTime);
+	}
+
+	
 }
 
 void AWeaponDefaults::FireTick(float DeltaTime)
@@ -305,7 +310,7 @@ void AWeaponDefaults::Fire()
 							UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), myParticle, FTransform(Hit.ImpactNormal.Rotation(), Hit.ImpactPoint, FVector(1.0f)));
 						}
 					}
-
+					
 					if (WeaponSetting.ProjectileSetting.HitSound)
 					{
 						UGameplayStatics::PlaySoundAtLocation(GetWorld(), WeaponSetting.ProjectileSetting.HitSound, Hit.ImpactPoint);
@@ -452,6 +457,8 @@ int32 AWeaponDefaults::GetWeaponRound()
 
 void AWeaponDefaults::InitReload()
 {
+	//On Server
+
 	WeaponReloading = true;
 
 	ReloadTimer = WeaponSetting.ReloadTime;
@@ -674,7 +681,10 @@ void AWeaponDefaults::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+
 	DOREPLIFETIME(AWeaponDefaults, AdditionalWeaponInfo);
+	DOREPLIFETIME(AWeaponDefaults, WeaponReloading);
+	
 	
 }
 

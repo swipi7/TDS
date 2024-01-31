@@ -20,6 +20,7 @@ class AMy_TDS_GameProjectCharacter : public ACharacter, public ITDS_IGameActor
 	GENERATED_BODY()
 
 protected:
+	bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlag) override;
 	virtual void BeginPlay() override;
 
 public:
@@ -115,7 +116,18 @@ public:
 
 
 	//Effects
+	UPROPERTY(Replicated)
 	TArray<UTDS_StateEffect*> Effects;
+	UPROPERTY(ReplicatedUsing = EffectAdd_OnRep)
+		UTDS_StateEffect* EffectAdd = nullptr;
+
+	UPROPERTY(ReplicatedUsing = EffectRemove_OnRep)
+		UTDS_StateEffect* EffectRemove = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dbag")
+		TArray<UParticleSystemComponent*> ParticleSystemEffects;
+
+
 	////for demo 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Demo")
 	FName InitWeaponName;
@@ -192,7 +204,7 @@ public:
 	//Invul
 	void TryAbilityInvul();
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(Replicated)
 		int32 CurrentIndexWeapon = 0;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -225,5 +237,19 @@ public:
 		void SetMovementState_OnServer(EMovementState NewState);
 	UFUNCTION(NetMulticast, Reliable)
 		void SetMovementState_Multicast(EMovementState NewState);
+
+	UFUNCTION(Server, Reliable)
+		void TryReloadWeapon_OnServer();
+
+	UFUNCTION(NetMulticast, Reliable)
+		void PlayAnim_Multicast(UAnimMontage* Anim);
+
+	UFUNCTION()
+		void EffectAdd_OnRep();
+	UFUNCTION()
+		void EffectRemove_OnRep();
+
+	UFUNCTION()
+		void SwitchEffect(UTDS_StateEffect* Effect, bool bIsAdd);
 
 };

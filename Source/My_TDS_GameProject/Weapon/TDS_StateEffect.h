@@ -21,7 +21,7 @@ class MY_TDS_GAMEPROJECT_API UTDS_StateEffect : public UObject
 
 public: 
 
-	
+	virtual bool IsSupportedForNetworking() const override { return true; };
 	virtual bool InitObject(AActor* Actor, FName NameBoneHit);
 	virtual void DestroyObject();
 	
@@ -33,7 +33,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting")
 		bool bIsStakable = false;
 
+	UParticleSystem* ParticleEffect = nullptr;
+
 	AActor* myActor = nullptr;
+	UPROPERTY(Replicated)
+	FName NameBone;
+
 };
 
 UCLASS()
@@ -71,10 +76,10 @@ public:
 
 	FTimerHandle TimerHandle_ExecuteTimer;
 	FTimerHandle TimerHandle_EffectTimer;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting ExecuteTimer")
-		UParticleSystem* ParticleEffect = nullptr;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting ExecuteTimer")
+		
 
-	UParticleSystemComponent* ParticleEmitter = nullptr;
+	//UParticleSystemComponent* ParticleEmitter = nullptr;
 };
 
 UCLASS()
@@ -88,5 +93,6 @@ public:
 	void DestroyObject() override;
 
 	virtual void ExecuteInvul();
+
 
 };
