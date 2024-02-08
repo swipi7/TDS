@@ -68,8 +68,8 @@ void AProjectileDefault::Tick(float DeltaTime)
 void AProjectileDefault::InitProjectile(FProjectileInfo InitParam)
 {
 
-	BulletProjectileMovement->InitialSpeed = InitParam.ProjectileInitSpeed;
-	BulletProjectileMovement->MaxSpeed = InitParam.ProjectileMaxSpeed;
+	//BulletProjectileMovement->InitialSpeed = InitParam.ProjectileInitSpeed;
+	//BulletProjectileMovement->MaxSpeed = InitParam.ProjectileMaxSpeed;
 	this->SetLifeSpan(InitParam.ProjectileLifeTime);
 	
 	if (InitParam.ProjectileStaticMesh)
@@ -85,6 +85,7 @@ void AProjectileDefault::InitProjectile(FProjectileInfo InitParam)
 	else
 		BulletFX->DestroyComponent();
 
+	InitVelosity_Multicast(InitParam.ProjectileInitSpeed, InitParam.ProjectileMaxSpeed);
 	
 	ProjectileSetting = InitParam;
 }
@@ -180,5 +181,20 @@ void AProjectileDefault::InitVisualTreilProjectile_Multicast_Implementation(UPar
 	BulletFX->SetRelativeTransform(TemplateRelative);
 }
 
+void AProjectileDefault::InitVelosity_Multicast_Implementation(float InitSpeed, float MaxSpeed)
+{
+	if (BulletProjectileMovement)
+	{
+		BulletProjectileMovement->Velocity = GetActorForwardVector() * InitSpeed;
+		BulletProjectileMovement->MaxSpeed = MaxSpeed;
+	}
 
+}
 
+void AProjectileDefault::PostNetReceiveVelocity(const FVector& NewVelosity)
+{
+	if (BulletProjectileMovement)
+	{
+		BulletProjectileMovement->Velocity = NewVelosity;
+	}
+}

@@ -106,18 +106,22 @@ void ATDS_EnviromentStructure::SwitchEffect(UTDS_StateEffect* Effect, bool bIsAd
 	}
 	else
 	{
+
 		int32 i = 0;
 		bool bIsFind = false;
-		while (i < ParticleSystemEffects.Num(), !bIsFind)
+		if (ParticleSystemEffects.Num() > 0)
 		{
-			if (ParticleSystemEffects[i]->Template && Effect->ParticleEffect && Effect->ParticleEffect == ParticleSystemEffects[i]->Template)
+			while (i < ParticleSystemEffects.Num() && !bIsFind)
 			{
-				bIsFind = true;
-				ParticleSystemEffects[i]->DeactivateSystem();
-				ParticleSystemEffects[i]->DestroyComponent();
-				ParticleSystemEffects.RemoveAt(i);
+				if (ParticleSystemEffects[i] && ParticleSystemEffects[i]->Template && Effect->ParticleEffect && Effect->ParticleEffect == ParticleSystemEffects[i]->Template)
+				{
+					bIsFind = true;
+					ParticleSystemEffects[i]->DeactivateSystem();
+					ParticleSystemEffects[i]->DestroyComponent();
+					ParticleSystemEffects.RemoveAt(i);
+				}
+				i++;
 			}
-			i++;
 		}
 	}
 }

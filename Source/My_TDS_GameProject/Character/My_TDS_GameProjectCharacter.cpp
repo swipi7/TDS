@@ -189,7 +189,7 @@ void AMy_TDS_GameProjectCharacter::InputAxisY(float Value)
 void AMy_TDS_GameProjectCharacter::InputAttackPressed()
 {
 
-	if (bIsAlive)
+	if (HealthComponent && HealthComponent->GetIsAlive())
 	{
 		AttackCharEvent(true);
 
@@ -203,7 +203,7 @@ void AMy_TDS_GameProjectCharacter::InputAttackReleased()
 
 void AMy_TDS_GameProjectCharacter::MovementTick(float DeltaTime)
 {
-	if (bIsAlive)
+	if (HealthComponent && HealthComponent->GetIsAlive())
 	{
 
 		if (GetController() && GetController()->IsLocalPlayerController())
@@ -449,7 +449,7 @@ void AMy_TDS_GameProjectCharacter::InitWeapon(FName IdWeaponName, FAdditionalWea
 
 void AMy_TDS_GameProjectCharacter::TryReloadWeapon()
 {
-	if (bIsAlive && CurrentWeapon && !CurrentWeapon->WeaponReloading)
+	if (HealthComponent && HealthComponent->GetIsAlive() && CurrentWeapon && !CurrentWeapon->WeaponReloading)
 	{
 		TryReloadWeapon_OnServer();
 		
@@ -654,7 +654,12 @@ void AMy_TDS_GameProjectCharacter::AddEffect(UTDS_StateEffect* newEffect)
 
 bool AMy_TDS_GameProjectCharacter::GetIsAlive()
 {
-	return bIsAlive;
+	bool result = false;
+	if (HealthComponent)
+	{
+		result = HealthComponent->GetIsAlive();
+	}
+	return result;
 }
 
 EMovementState AMy_TDS_GameProjectCharacter::GetMovementState()
@@ -673,39 +678,53 @@ void AMy_TDS_GameProjectCharacter::PlayAnim_Multicast_Implementation(UAnimMontag
 
 void AMy_TDS_GameProjectCharacter::CharDead()
 {
-	float TimeAnim = 0.0f;
-	int32 rnd = FMath::RandHelper(DeadsAnim.Num());
-	if (DeadsAnim.IsValidIndex(rnd) && DeadsAnim[rnd] && GetMesh() && GetMesh()->GetAnimInstance())
+
+	if (HasAuthority())
 	{
-		TimeAnim = DeadsAnim[rnd]->GetPlayLength();
-		//GetMesh()->GetAnimInstance()->Montage_Play(DeadsAnim[rnd]);
-		PlayAnim_Multicast(DeadsAnim[rnd]);
+		float TimeAnim = 0.0f;
+		int32 rnd = FMath::RandHelper(DeadsAnim.Num());
+		if (DeadsAnim.IsValidIndex(rnd) && DeadsAnim[rnd] && GetMesh() && GetMesh()->GetAnimInstance())
+		{
+			TimeAnim = DeadsAnim[rnd]->GetPlayLength();
+			//GetMesh()->GetAnimInstance()->Montage_Play(DeadsAnim[rnd]);
+			PlayAnim_Multicast(DeadsAnim[rnd]);
+		}
+
+
+		if (GetController())
+		{
+			GetController()->UnPossess();
+		}
+		//Timer Ragdoll
+
+		GetWorldTimerManager().SetTimer(TimerHandle_RagDollTimer, this, &AMy_TDS_GameProjectCharacter::EnableRagDoll_Multicast, TimeAnim, false);
+	}
+	else
+	{
+		if (GetCursorToWorld())
+		{
+			GetCursorToWorld()->SetVisibility(false);
+		}
+		AttackCharEvent(false);
 	}
 
-	bIsAlive = false;
-
-	if (GetController())
+	if (GetCapsuleComponent())
 	{
-		GetController()->UnPossess();
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	}
+
 
 	
-	UnPossessed();
-	//Timer Ragdoll
-
-	GetWorldTimerManager().SetTimer(TimerHandle_RagDollTimer, this, &AMy_TDS_GameProjectCharacter::EnableRagDoll, TimeAnim, false);
-
-	GetCursorToWorld()->SetVisibility(false);
-
-	AttackCharEvent(false);
-
 	CharDead_BP();
 }
 
-void AMy_TDS_GameProjectCharacter::EnableRagDoll()
+void AMy_TDS_GameProjectCharacter::EnableRagDoll_Multicast_Implementation()
 {
 	if (GetMesh())
 	{
+		
+		GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
+		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Block);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		GetMesh()->SetSimulatePhysics(true);
 	}
@@ -715,12 +734,12 @@ float AMy_TDS_GameProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent 
 {
 	//Damage Character
 
-	if (bIsAlive && Invul)
+	if (HealthComponent && Invul)
 	{
 		return 0.f;
 	}
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	if (bIsAlive && !Invul)
+	if (HealthComponent && !Invul)
 	{	
 		UE_LOG(LogTemp, Warning, TEXT("Damage"));
 			HealthComponent->ChangeHealthValue_OnServer(-DamageAmount);
@@ -817,18 +836,24 @@ void AMy_TDS_GameProjectCharacter::SwitchEffect(UTDS_StateEffect* Effect, bool b
 	}
 	else
 	{
-		int32 i = 0;
-		bool bIsFind = false;
-		while (i < ParticleSystemEffects.Num(), !bIsFind)
+		if (Effect && Effect->ParticleEffect)
 		{
-			if (ParticleSystemEffects[i]->Template && Effect->ParticleEffect && Effect->ParticleEffect == ParticleSystemEffects[i]->Template)
+			int32 i = 0;
+			bool bIsFind = false;
+			if (ParticleSystemEffects.Num() > 0)
 			{
-				bIsFind = true;
-				ParticleSystemEffects[i]->DeactivateSystem();
-				ParticleSystemEffects[i]->DestroyComponent();
-				ParticleSystemEffects.RemoveAt(i);
+				while (i < ParticleSystemEffects.Num() && !bIsFind)
+				{
+					if (ParticleSystemEffects[i] && ParticleSystemEffects[i]->Template && Effect->ParticleEffect && Effect->ParticleEffect == ParticleSystemEffects[i]->Template)
+					{
+						bIsFind = true;
+						ParticleSystemEffects[i]->DeactivateSystem();
+						ParticleSystemEffects[i]->DestroyComponent();
+						ParticleSystemEffects.RemoveAt(i);
+					}
+					i++;
+				}
 			}
-			i++;
 		}
 	}
 }

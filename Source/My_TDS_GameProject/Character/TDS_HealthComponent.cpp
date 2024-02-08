@@ -46,11 +46,16 @@ void UTDS_HealthComponent::SetCurrentHealth(float NewHealth)
 	Health = NewHealth;
 }
 
+bool UTDS_HealthComponent::GetIsAlive()
+{
+	return bIsAlive;
+}
+
 void UTDS_HealthComponent::ChangeHealthValue_OnServer_Implementation(float ChangeValue)
 {
 	
-	
-	
+	if (bIsAlive)
+	{
 		ChangeValue = ChangeValue * CoefDamage;
 
 		Health += ChangeValue;
@@ -66,10 +71,14 @@ void UTDS_HealthComponent::ChangeHealthValue_OnServer_Implementation(float Chang
 		{
 			if (Health < 0.0f)
 			{
+				bIsAlive = false;
 				//OnDead.Broadcast();
 				DeadEvent_Multicast();
 			}
 		}
+	}
+	
+		
 		
 	
 
@@ -91,6 +100,7 @@ void UTDS_HealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 
 	DOREPLIFETIME(UTDS_HealthComponent, Health);
+	DOREPLIFETIME(UTDS_HealthComponent, bIsAlive);
 	
 }
 

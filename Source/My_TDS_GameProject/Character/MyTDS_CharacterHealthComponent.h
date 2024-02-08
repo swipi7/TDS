@@ -25,6 +25,8 @@ public:
 
 protected:
 	float Shield = 100.0f;
+
+
 public:
 	
 	//Shield 

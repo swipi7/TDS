@@ -83,8 +83,7 @@ public:
 		bool AimEnabled = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		bool bIsMovingForward = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-		bool bIsAlive = true;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		TArray<UAnimMontage*> DeadsAnim;
@@ -221,8 +220,8 @@ public:
 
 	UFUNCTION()
 	void CharDead();
-
-	void EnableRagDoll();
+	UFUNCTION(NetMulticast, Reliable)
+	void EnableRagDoll_Multicast();
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintNativeEvent)
