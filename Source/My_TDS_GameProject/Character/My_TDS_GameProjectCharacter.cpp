@@ -433,7 +433,7 @@ void AMy_TDS_GameProjectCharacter::InitWeapon(FName IdWeaponName, FAdditionalWea
 					if (InventoryComponent)
 						InventoryComponent->OnWeaponAmmoAviable.Broadcast(myWeapon->WeaponSetting.WeaponType);
 
-					UE_LOG(LogTemp, Warning, TEXT("WeaponSpawn"));
+					
 				}
 			}
 		}
@@ -678,6 +678,7 @@ void AMy_TDS_GameProjectCharacter::PlayAnim_Multicast_Implementation(UAnimMontag
 
 void AMy_TDS_GameProjectCharacter::CharDead()
 {
+	CharDead_BP();
 
 	if (HasAuthority())
 	{
@@ -715,7 +716,7 @@ void AMy_TDS_GameProjectCharacter::CharDead()
 
 
 	
-	CharDead_BP();
+	
 }
 
 void AMy_TDS_GameProjectCharacter::EnableRagDoll_Multicast_Implementation()
