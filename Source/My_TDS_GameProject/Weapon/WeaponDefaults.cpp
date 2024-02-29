@@ -183,7 +183,7 @@ void AWeaponDefaults::SetWeaponStateFire_OnServer_Implementation(bool bIsFire)
 		WeaponFiring = bIsFire;
 	else
 		WeaponFiring = false;
-		FireTimer = 0.01f;//!!!!!
+	FireTimer = 0.01f;//!!!!!
 }
 
 bool AWeaponDefaults::CheckWeaponCanFire()

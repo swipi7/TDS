@@ -62,18 +62,17 @@ bool UTDS_GameInstance::GetWeaponInfoByWeaponName(FName NameItem, FDropItem& Out
 bool UTDS_GameInstance::GetDropItemInfoByName(FName NameItem, FDropItem& OutInfo)
 {
 	bool bIsFind;
-	FDropItem* DropItemInfoRow;
+	//FDropItem* DropItemInfoRow;
 
 	if (DropItemInfoTable)
 	{
-		DropItemInfoRow = DropItemInfoTable->FindRow<FDropItem>(NameItem, "", false);
+		FDropItem* DropItemInfoRow = DropItemInfoTable->FindRow<FDropItem>(NameItem, "", false);
 		if (DropItemInfoRow)
 		{
 			bIsFind = true;
 			OutInfo = *DropItemInfoRow;
 
 		}
-		
 	}
 	else
 	{
