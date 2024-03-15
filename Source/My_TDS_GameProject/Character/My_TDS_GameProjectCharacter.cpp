@@ -54,7 +54,7 @@ AMy_TDS_GameProjectCharacter::AMy_TDS_GameProjectCharacter()
 	
 		
 		InventoryComponent = CreateDefaultSubobject<UTDS_Inventar>(TEXT ("InventoryComponet"));
-		HealthComponent = CreateDefaultSubobject<UMyTDS_CharacterHealthComponent>(TEXT("HealthComponent"));
+		HealthComponent = CreateDefaultSubobject<UTDS_HealthComponent>(TEXT("HealthComponent"));
 
 		if (HealthComponent)
 		{
@@ -212,7 +212,7 @@ void AMy_TDS_GameProjectCharacter::MovementTick(float DeltaTime)
 			AddMovementInput(FVector(0.0f, 1.0f, 0.0f), AxisY);
 
 			FString SEnum = UEnum::GetValueAsString(GetMovementState());
-			UE_LOG(LogMy_TDS_GameProject_Net, Warning, TEXT("Movement State - %s"), *SEnum);
+			//UE_LOG(LogMy_TDS_GameProject_Net, Warning, TEXT("Movement State - %s"), *SEnum);
 
 			if (MovementState == EMovementState::SprintRun_State)
 			{
@@ -291,8 +291,8 @@ void AMy_TDS_GameProjectCharacter::AttackCharEvent(bool bIsFiring)
 		myWeapon->SetWeaponStateFire_OnServer(bIsFiring);
 		
 	}
-	else
-		UE_LOG(LogTemp, Warning, TEXT("FIRE22222"));
+	//else
+		//UE_LOG(LogTemp, Warning, TEXT("FIRE22222"));
 
 }
 
@@ -440,8 +440,8 @@ void AMy_TDS_GameProjectCharacter::InitWeapon(FName IdWeaponName, FAdditionalWea
 		
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ATPSCharacter::InitWeapon - Weapon not found in table -NULL"));
-			UE_LOG(LogTemp, Warning, TEXT("WeaponSpawn"));
+			/*UE_LOG(LogTemp, Warning, TEXT("ATPSCharacter::InitWeapon - Weapon not found in table -NULL"));
+			UE_LOG(LogTemp, Warning, TEXT("WeaponSpawn"));*/
 
 		}
 	}
@@ -592,7 +592,7 @@ void AMy_TDS_GameProjectCharacter::TryAbilityEnabled()
 
 void AMy_TDS_GameProjectCharacter::TryAbilityInvul()
 {
-	UE_LOG(LogTemp, Warning, TEXT("INVULNNNNNN"));
+	//UE_LOG(LogTemp, Warning, TEXT("INVULNNNNNN"));
 
 	Invul = true;
 
@@ -731,7 +731,7 @@ void AMy_TDS_GameProjectCharacter::EnableRagDoll_Multicast_Implementation()
 	}
 }
 
-float AMy_TDS_GameProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float AMy_TDS_GameProjectCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	//Damage Character
 
@@ -739,11 +739,11 @@ float AMy_TDS_GameProjectCharacter::TakeDamage(float DamageAmount, FDamageEvent 
 	{
 		return 0.f;
 	}
-	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (HealthComponent && !Invul)
 	{	
-		UE_LOG(LogTemp, Warning, TEXT("Damage"));
-			HealthComponent->ChangeHealthValue_OnServer(-DamageAmount);
+		//UE_LOG(LogTemp, Warning, TEXT("Damage"));
+			HealthComponent->ChangeHealthValue_OnServer(Damage);
 	
 	}
 

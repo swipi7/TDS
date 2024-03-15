@@ -11,6 +11,7 @@
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChange, float, Health, float, Damage);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShieldChange, float, Shield, float, Damage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDead);
 
 
@@ -24,22 +25,40 @@ public:
 	// Sets default values for this component's properties
 	UTDS_HealthComponent();
 
+	float GetHealth() const { return Health; }
+
+
 	UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Health")
 		FOnHealthChange OnHealthChange;
 	UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Health")
 		FOnDead OnDead;
+	UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Shield")
+		FOnShieldChange OnShieldChange;
+
+	FTimerHandle TimerHandle_CollDownShieldTimer;
+	FTimerHandle TimerHandle_ShieldRecoveryRateTimer;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float MaxHealth = 100.0f;
 	UPROPERTY(Replicated)
-	float Health = 100.0f;
+	float Shield = 100.0f;
+
+	UPROPERTY(Replicated)
+	bool bHasShield = true;
 
 	UPROPERTY(Replicated)
 		bool bIsAlive = true;
+private:
+
+	float Health = 0.0f;
 
 public:	
+
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 		float CoefDamage = 1.0f;
@@ -70,5 +89,27 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 		void DeadEvent_Multicast();
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield")
+		float CoolDownShieldRecoveryTime = 5.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield")
+		float ShieldRecoverValue = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield")
+		float ShieldRecoverRate = 0.1f;
+
+
+	
+
+	float GetCorrentShield();
+
+	void ChangeShieldValue(float ChangeValue);
+	void CoolDownShieldEnd();
+	void RecoveryShield();
+
+	UFUNCTION(BlueprintCallable)
+		float GetShieldValue();
+
+	UFUNCTION(NetMulticast, Reliable)
+		void ShieldChangeEvent_Multicast(float newShield, float Damage);
 
 };

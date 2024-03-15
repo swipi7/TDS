@@ -8,7 +8,7 @@
 #include "My_TDS_GameProject/Weapon/WeaponDefaults.h"
 #include "My_TDS_GameProject/TDS_GameInstance.h"
 #include "My_TDS_GameProject/TDS_Inventar.h"
-#include "My_TDS_GameProject/Character/MyTDS_CharacterHealthComponent.h"
+#include "My_TDS_GameProject/Character/TDS_HealthComponent.h"
 #include "TDS_IGameActor.h"
 #include "Weapon/TDS_StateEffect.h"
 
@@ -22,6 +22,9 @@ class AMy_TDS_GameProjectCharacter : public ACharacter, public ITDS_IGameActor
 protected:
 	bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlag) override;
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "true")
+		UTDS_HealthComponent* HealthComponent;
 
 public:
 	AMy_TDS_GameProjectCharacter();
@@ -43,8 +46,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UTDS_Inventar* InventoryComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UMyTDS_CharacterHealthComponent* HealthComponent;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		class UMyTDS_CharacterHealthComponent* HealthComponent;*/
 
 private:
 	/** Top down camera */
@@ -62,8 +65,6 @@ private:
 	bool bSprintForward();
 
 public:
-
-	//ROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cursor")
 		UMaterialInterface* CursorMaterial = nullptr;
@@ -203,7 +204,7 @@ public:
 	//Invul
 	void TryAbilityInvul();
 
-	UPROPERTY(Replicated)
+	UPROPERTY(BlueprintReadOnly, Replicated)
 		int32 CurrentIndexWeapon = 0;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -222,7 +223,7 @@ public:
 	void CharDead();
 	UFUNCTION(NetMulticast, Reliable)
 	void EnableRagDoll_Multicast();
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintNativeEvent)
 		void CharDead_BP();

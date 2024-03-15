@@ -23,6 +23,7 @@ void UTDS_HealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Health = MaxHealth;
 	// ...
 	
 }
@@ -56,32 +57,36 @@ void UTDS_HealthComponent::ChangeHealthValue_OnServer_Implementation(float Chang
 	
 	if (bIsAlive)
 	{
-		ChangeValue = ChangeValue * CoefDamage;
-
-		Health += ChangeValue;
-
-		//OnHealthChange.Broadcast(Health, ChangeValue);
-		HealthChangeEvent_Multicast(Health, ChangeValue);
-
-		if (Health > 100.0f)
+		if (bHasShield)
 		{
-			Health = 100.0f;
+			if (ChangeValue < 0)
+			{
+				ChangeValue = ChangeValue * CoefDamage;
+				float cShield = Shield + ChangeValue;
+				
+				if (cShield <= 0)
+				{
+					Health = ChangeValue + Shield;
+					Shield = 0;
+					UE_LOG(LogTemp, Warning, TEXT("Health"));
+				}
+				else
+				{
+					Shield = cShield;
+					UE_LOG(LogTemp, Warning, TEXT("Shield"));
+				}
+				
+			}	
+			
 		}
 		else
 		{
-			if (Health < 0.0f)
-			{
-				bIsAlive = false;
-				//OnDead.Broadcast();
-				DeadEvent_Multicast();
-			}
+
 		}
+		
+
 	}
 	
-		
-		
-	
-
 }
 
 void UTDS_HealthComponent::DeadEvent_Multicast_Implementation()
@@ -100,7 +105,101 @@ void UTDS_HealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 
 	DOREPLIFETIME(UTDS_HealthComponent, Health);
+	DOREPLIFETIME(UTDS_HealthComponent, Shield);
 	DOREPLIFETIME(UTDS_HealthComponent, bIsAlive);
 	
 }
 
+//void UTDS_HealthComponent::ChangeHealthValue_OnServer(float ChangeValue)
+//{
+//
+//	float CurrentDamage = ChangeValue * CoefDamage;
+//	//Health += ChangeValue;
+//
+//	if (Shield > 0.0f && ChangeValue < 0.0f)
+//	{
+//		ChangeShieldValue(ChangeValue);
+//
+//		if (Shield < 0.0f)
+//		{
+//			//fX
+//		}
+//	}
+//	else
+//	{
+//		Super::ChangeHealthValue_OnServer(ChangeValue);
+//	}
+//
+//}
+
+float UTDS_HealthComponent::GetCorrentShield()
+{
+	return Shield;
+}
+
+void UTDS_HealthComponent::ChangeShieldValue(float ChangeValue)
+{
+	Shield += ChangeValue;
+
+	//OnShieldChange.Broadcast(Shield, ChangeValue);
+	ShieldChangeEvent_Multicast(Shield, ChangeValue);
+
+	if (Shield > 100.0f)
+	{
+		Shield = 100.0f;
+	}
+	else
+	{
+		if (Shield < 0.0f)
+		{
+			Shield = 0.0f;
+		}
+	}
+
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_CollDownShieldTimer, this, &UTDS_HealthComponent::CoolDownShieldEnd, CoolDownShieldRecoveryTime, false);
+
+		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_ShieldRecoveryRateTimer);
+	}
+
+}
+
+void UTDS_HealthComponent::CoolDownShieldEnd()
+{
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_ShieldRecoveryRateTimer, this, &UTDS_HealthComponent::RecoveryShield, ShieldRecoverRate, true);
+	}
+}
+
+void UTDS_HealthComponent::RecoveryShield()
+{
+	float tmp = Shield;
+	tmp = tmp + ShieldRecoverValue;
+
+	if (tmp > 100.0f)
+	{
+		Shield = 100.0f;
+		if (GetWorld())
+		{
+			GetWorld()->GetTimerManager().ClearTimer(TimerHandle_ShieldRecoveryRateTimer);
+		}
+	}
+	else
+	{
+		Shield = tmp;
+	}
+	//OnShieldChange.Broadcast(Shield, ShieldRecoverValue);
+	ShieldChangeEvent_Multicast(Shield, ShieldRecoverValue);
+}
+
+float UTDS_HealthComponent::GetShieldValue()
+{
+	return Shield;
+}
+
+void UTDS_HealthComponent::ShieldChangeEvent_Multicast_Implementation(float newShield, float Damage)
+{
+	OnShieldChange.Broadcast(newShield, Damage);
+}

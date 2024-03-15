@@ -164,14 +164,14 @@ void AWeaponDefaults::WeaponInit()
 	if (SkeletalMeshWeapon && !SkeletalMeshWeapon->SkeletalMesh)
 	{
 		SkeletalMeshWeapon->DestroyComponent(true);
-		UE_LOG(LogTemp, Warning, TEXT("WeaponInet 1"));
+		//UE_LOG(LogTemp, Warning, TEXT("WeaponInet 1"));
 
 	}
 
 	if (StaticMeshWeapon && !StaticMeshWeapon->GetStaticMesh())
 	{
 		StaticMeshWeapon->DestroyComponent();
-		UE_LOG(LogTemp, Warning, TEXT("WeaponInet 2"));
+		//UE_LOG(LogTemp, Warning, TEXT("WeaponInet 2"));
 
 	}
 	UpdateStateWeapon_OnServer(EMovementState::Run_State);
@@ -336,7 +336,7 @@ void AWeaponDefaults::Fire()
 			}
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("33333333333333333333333333"));
+	//UE_LOG(LogTemp, Warning, TEXT("33333333333333333333333333"));
 
 	if (GetWeaponRound() <= 0 && !WeaponReloading)
 	{
