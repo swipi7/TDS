@@ -4,6 +4,8 @@
 //#include "Character/TDS_HealthComponent.h"
 #include "TDS_HealthComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Components/ActorComponent.h"
+
 
 // Sets default values for this component's properties
 UTDS_HealthComponent::UTDS_HealthComponent()
@@ -24,6 +26,7 @@ void UTDS_HealthComponent::BeginPlay()
 	Super::BeginPlay();
 
 	Health = MaxHealth;
+	Shield = MaxShield;
 	// ...
 	
 }
@@ -63,16 +66,29 @@ void UTDS_HealthComponent::ChangeHealthValue_OnServer_Implementation(float Chang
 			{
 				ChangeValue = ChangeValue * CoefDamage;
 				float cShield = Shield + ChangeValue;
+
 				
 				if (cShield <= 0)
 				{
-					Health = ChangeValue + Shield;
+					Health = Health + (ChangeValue + Shield);
 					Shield = 0;
 					UE_LOG(LogTemp, Warning, TEXT("Health"));
+					//OnHealthChange.Broadcast(Health, ChangeValue);
+					HealthChangeEvent_Multicast(Health, ChangeValue);
+					//OnShieldChange.Broadcast(Shield, ChangeValue);
+					ShieldChangeEvent_Multicast(Shield, ChangeValue);
+					if (Health <= 0)
+					{
+						Health = 0;
+						OnDead.Broadcast();
+					}
 				}
 				else
 				{
 					Shield = cShield;
+					
+					//OnShieldChange.Broadcast(Shield, ChangeValue);
+					ShieldChangeEvent_Multicast(Shield, ChangeValue);
 					UE_LOG(LogTemp, Warning, TEXT("Shield"));
 				}
 				
@@ -81,7 +97,7 @@ void UTDS_HealthComponent::ChangeHealthValue_OnServer_Implementation(float Chang
 		}
 		else
 		{
-
+			UE_LOG(LogTemp, Warning, TEXT("NOSHIELD!!!"))
 		}
 		
 
@@ -97,17 +113,6 @@ void UTDS_HealthComponent::DeadEvent_Multicast_Implementation()
 void UTDS_HealthComponent::HealthChangeEvent_Multicast_Implementation(float newHealth, float value)
 {
 	OnHealthChange.Broadcast(newHealth, value);
-}
-
-void UTDS_HealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-
-	DOREPLIFETIME(UTDS_HealthComponent, Health);
-	DOREPLIFETIME(UTDS_HealthComponent, Shield);
-	DOREPLIFETIME(UTDS_HealthComponent, bIsAlive);
-	
 }
 
 //void UTDS_HealthComponent::ChangeHealthValue_OnServer(float ChangeValue)
@@ -127,9 +132,9 @@ void UTDS_HealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 //	}
 //	else
 //	{
-//		Super::ChangeHealthValue_OnServer(ChangeValue);
+		//Super::ChangeHealthValue
 //	}
-//
+
 //}
 
 float UTDS_HealthComponent::GetCorrentShield()
@@ -158,8 +163,10 @@ void UTDS_HealthComponent::ChangeShieldValue(float ChangeValue)
 
 	if (GetWorld())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TimerShieldColdown"))
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_CollDownShieldTimer, this, &UTDS_HealthComponent::CoolDownShieldEnd, CoolDownShieldRecoveryTime, false);
-
+		UE_LOG(LogTemp, Warning, TEXT("TimerShieldColdown"))
+		UE_LOG(LogTemp, Warning, TEXT("TimerShieldClear"))
 		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_ShieldRecoveryRateTimer);
 	}
 
@@ -169,6 +176,7 @@ void UTDS_HealthComponent::CoolDownShieldEnd()
 {
 	if (GetWorld())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("TimerShieldEnd"))
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_ShieldRecoveryRateTimer, this, &UTDS_HealthComponent::RecoveryShield, ShieldRecoverRate, true);
 	}
 }
@@ -183,7 +191,9 @@ void UTDS_HealthComponent::RecoveryShield()
 		Shield = 100.0f;
 		if (GetWorld())
 		{
+			UE_LOG(LogTemp, Warning, TEXT("TimerShieldRecovery"))
 			GetWorld()->GetTimerManager().ClearTimer(TimerHandle_ShieldRecoveryRateTimer);
+		
 		}
 	}
 	else
@@ -202,4 +212,15 @@ float UTDS_HealthComponent::GetShieldValue()
 void UTDS_HealthComponent::ShieldChangeEvent_Multicast_Implementation(float newShield, float Damage)
 {
 	OnShieldChange.Broadcast(newShield, Damage);
+}
+
+void UTDS_HealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+
+	DOREPLIFETIME(UTDS_HealthComponent, Health);
+	DOREPLIFETIME(UTDS_HealthComponent, Shield);
+	DOREPLIFETIME(UTDS_HealthComponent, bIsAlive);
+	DOREPLIFETIME(UTDS_HealthComponent, bHasShield);
 }

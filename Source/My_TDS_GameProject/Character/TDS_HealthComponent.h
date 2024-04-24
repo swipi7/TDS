@@ -44,8 +44,8 @@ protected:
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float MaxHealth = 100.0f;
-	UPROPERTY(Replicated)
-	float Shield = 100.0f;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Shield")
+	float MaxShield = 100.0f;
 
 	UPROPERTY(Replicated)
 	bool bHasShield = true;
@@ -53,7 +53,7 @@ protected:
 	UPROPERTY(Replicated)
 		bool bIsAlive = true;
 private:
-
+	float Shield = 0.0f;
 	float Health = 0.0f;
 
 public:	
@@ -80,14 +80,15 @@ public:
 
 
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Health")
-		virtual void ChangeHealthValue_OnServer(float ChangeValue);
+		void ChangeHealthValue_OnServer(float ChangeValue);
 	
 	UFUNCTION(NetMulticast, Reliable)
-		void HealthChangeEvent_Multicast(float newHealth, float value);
+		virtual void HealthChangeEvent_Multicast(float newHealth, float value);
 
 
 	UFUNCTION(NetMulticast, Reliable)
 		void DeadEvent_Multicast();
+
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shield")

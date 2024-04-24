@@ -4,6 +4,7 @@
 #include "Weapon/Projectile_Bomborgmebt.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "My_TDS_GameProjectCharacter.h"
 
 int32 DebugExplodeShow = 0;
 FAutoConsoleVariableRef CVARExplodeShow(TEXT("TPS.DebugExplode"), DebugExplodeShow, TEXT("Draw Debug for Explode"), ECVF_Cheat);
@@ -48,11 +49,11 @@ void AProjectile_Bomborgmebt::TimerExplose(float Deltatime)
 
 void AProjectile_Bomborgmebt::BulletCollisionSphereHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (!TimerEnabled)
+	if (Hit.bBlockingHit)
 	{
 		Explose();
+		Super::BulletCollisionSphereHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 	}
-	Super::BulletCollisionSphereHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 }
 
 

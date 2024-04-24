@@ -64,19 +64,19 @@ bool UTDS_GameInstance::GetDropItemInfoByName(FName NameItem, FDropItem& OutInfo
 	bool bIsFind;
 	//FDropItem* DropItemInfoRow;
 
-	if (DropItemInfoTable)
-	{
-		FDropItem* DropItemInfoRow = DropItemInfoTable->FindRow<FDropItem>(NameItem, "", false);
-		if (DropItemInfoRow)
+		if (DropItemInfoTable)
 		{
+		FDropItem* DropItemInfoRow = DropItemInfoTable->FindRow<FDropItem>(NameItem, "", false);
+			if (DropItemInfoRow)
+			{
 			bIsFind = true;
 			OutInfo = *DropItemInfoRow;
 
+			}
 		}
-	}
-	else
-	{
+		else
+		{
 		//UE_LOG(LogTemp, Warning, TEXT("UTPSGameInstance::GetDropItemInfoByName - DropItemInfoTable -NULL"));
-	}
+		}
 	return bIsFind;
 }

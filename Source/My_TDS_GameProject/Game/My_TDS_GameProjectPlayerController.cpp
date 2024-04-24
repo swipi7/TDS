@@ -113,6 +113,6 @@ void AMy_TDS_GameProjectPlayerController::OnSetDestinationReleased()
 
 void AMy_TDS_GameProjectPlayerController::OnUnPossess()
 {
-	
+	Super::OnUnPossess();
 }
 

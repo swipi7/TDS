@@ -25,6 +25,7 @@ public:
 	// Sets default values for this component's properties
 	UTDS_Inventar();
 
+	UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 		FOnSwitchWeapon OnSwitchWeapon;
 	UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 		FOnAmmoChange OnAmmoChange;

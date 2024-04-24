@@ -20,6 +20,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Engine/ActorChannel.h"
+#include "TDS_HealthComponent.h"
 
 
 AMy_TDS_GameProjectCharacter::AMy_TDS_GameProjectCharacter()
@@ -50,8 +51,6 @@ AMy_TDS_GameProjectCharacter::AMy_TDS_GameProjectCharacter()
 	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	
 		
 		InventoryComponent = CreateDefaultSubobject<UTDS_Inventar>(TEXT ("InventoryComponet"));
 		HealthComponent = CreateDefaultSubobject<UTDS_HealthComponent>(TEXT("HealthComponent"));
@@ -178,12 +177,19 @@ void AMy_TDS_GameProjectCharacter::ChangeInvul()
 
 void AMy_TDS_GameProjectCharacter::InputAxisX(float Value)
 {
-	AxisX = Value;
+	if (GetIsAlive())
+	{
+		AxisX = Value;
+	}
+	
 }
 
 void AMy_TDS_GameProjectCharacter::InputAxisY(float Value)
 {
-	AxisY = Value;
+	if (GetIsAlive())
+	{
+		AxisY = Value;
+	}
 }
 
 void AMy_TDS_GameProjectCharacter::InputAttackPressed()
@@ -265,7 +271,6 @@ void AMy_TDS_GameProjectCharacter::MovementTick(float DeltaTime)
 						default:
 							break;
 						}
-
 						//CurrentWeapon->ShootEndLocation = ResultHit.Location + Displacement;
 						CurrentWeapon->UpdateWeaponByCharacterMovementState_OnServer(ResultHit.Location + Displacement, bIsReduceDispersion);
 						//aim cursor like 3d Widget?
@@ -273,11 +278,7 @@ void AMy_TDS_GameProjectCharacter::MovementTick(float DeltaTime)
 				}
 			}
 		}
-
-		
 	}
-
-	
 }
 
 void AMy_TDS_GameProjectCharacter::AttackCharEvent(bool bIsFiring)
@@ -286,14 +287,11 @@ void AMy_TDS_GameProjectCharacter::AttackCharEvent(bool bIsFiring)
 	myWeapon = GetCurrentWeapon();
 	if (myWeapon)
 	{
-	
 		//ToDo Check melee or range
 		myWeapon->SetWeaponStateFire_OnServer(bIsFiring);
-		
 	}
 	//else
 		//UE_LOG(LogTemp, Warning, TEXT("FIRE22222"));
-
 }
 
 void AMy_TDS_GameProjectCharacter::CharacterUpdate()
@@ -678,6 +676,7 @@ void AMy_TDS_GameProjectCharacter::PlayAnim_Multicast_Implementation(UAnimMontag
 
 void AMy_TDS_GameProjectCharacter::CharDead()
 {
+	
 	CharDead_BP();
 
 	if (HasAuthority())
@@ -690,15 +689,23 @@ void AMy_TDS_GameProjectCharacter::CharDead()
 			//GetMesh()->GetAnimInstance()->Montage_Play(DeadsAnim[rnd]);
 			PlayAnim_Multicast(DeadsAnim[rnd]);
 		}
-
-
+		
+		
 		if (GetController())
 		{
-			GetController()->UnPossess();
+			if(APlayerController* CurentController = Cast<APlayerController>(GetController()))
+			{ 
+				UE_LOG(LogTemp, Warning, TEXT("VALID PPOSSESS"));
+				CurentController->UnPossess();
+			}
 		}
+		//UnPossessed();
 		//Timer Ragdoll
+		AttackCharEvent(false);
 
 		GetWorldTimerManager().SetTimer(TimerHandle_RagDollTimer, this, &AMy_TDS_GameProjectCharacter::EnableRagDoll_Multicast, TimeAnim, false);
+		
+		
 	}
 	else
 	{
@@ -706,16 +713,18 @@ void AMy_TDS_GameProjectCharacter::CharDead()
 		{
 			GetCursorToWorld()->SetVisibility(false);
 		}
-		AttackCharEvent(false);
+		
 	}
 
 	if (GetCapsuleComponent())
 	{
 		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+		GetCapsuleComponent()->SetGenerateOverlapEvents(false);
+		SetLifeSpan(2.f);
 	}
 
 
-	
 	
 }
 
@@ -725,9 +734,10 @@ void AMy_TDS_GameProjectCharacter::EnableRagDoll_Multicast_Implementation()
 	{
 		
 		GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
-		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Block);
+		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		GetMesh()->SetSimulatePhysics(true);
+		SetCanBeDamaged(false);
 	}
 }
 
@@ -735,15 +745,15 @@ float AMy_TDS_GameProjectCharacter::TakeDamage(float Damage, FDamageEvent const&
 {
 	//Damage Character
 
-	if (HealthComponent && Invul)
+	if (HealthComponent && (Invul || !GetIsAlive()))
 	{
 		return 0.f;
 	}
 	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	if (HealthComponent && !Invul)
+	if (HealthComponent)
 	{	
 		//UE_LOG(LogTemp, Warning, TEXT("Damage"));
-			HealthComponent->ChangeHealthValue_OnServer(Damage);
+			HealthComponent->ChangeHealthValue_OnServer(ActualDamage);
 	
 	}
 
