@@ -213,7 +213,7 @@ bool UTDS_Inventar::SwitchWeaponToIndex(int32 ChangeToIndex, int32 OldIndex, FAd
 											else
 											{
 												//Not find weapon with amm need init Pistol with infinity ammo
-												UE_LOG(LogTemp, Error, TEXT("UTPSInventoryComponent::SwitchWeaponToIndex - Init PISTOL - NEED"));
+												//UE_LOG(LogTemp, Error, TEXT("UTPSInventoryComponent::SwitchWeaponToIndex - Init PISTOL - NEED"));
 											}
 										}
 										j++;
@@ -345,7 +345,7 @@ bool UTDS_Inventar::SwitchWeaponToIndex(int32 ChangeToIndex, int32 OldIndex, FAd
 											else
 											{
 												//Not find weapon with amm need init Pistol with infinity ammo
-												UE_LOG(LogTemp, Error, TEXT("UTPSInventoryComponent::SwitchWeaponToIndex - Init PISTOL - NEED"));
+												//UE_LOG(LogTemp, Error, TEXT("UTPSInventoryComponent::SwitchWeaponToIndex - Init PISTOL - NEED"));
 											}
 										}
 										j++;

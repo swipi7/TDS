@@ -131,8 +131,8 @@ void AWeaponDefaults::DispersionTick(float DeltaTime)
 			}
 		}
 	}
-	if (ShowDebug)
-		UE_LOG(LogTemp, Warning, TEXT("Dispersion: MAX = %f. MIN = %f. Current = %f"), CurrentDispersionMax, CurrentDispersionMin, CurrentDispersion);
+	//if (ShowDebug)
+		//UE_LOG(LogTemp, Warning, TEXT("Dispersion: MAX = %f. MIN = %f. Current = %f"), CurrentDispersionMax, CurrentDispersionMin, CurrentDispersion);
 }
 
 void AWeaponDefaults::ShellDropTick(float DeltaTime)
@@ -672,7 +672,7 @@ int8 AWeaponDefaults::GetAviableAmmoForReload()
 			
 			if (MyInventary->CheckAmmoForWeapon(WeaponSetting.WeaponType, AviableAmmoForWeapon))
 			{
-				AviableAmmoForWeapon = AviableAmmoForWeapon;
+				//AviableAmmoForWeapon = AviableAmmoForWeapon;
 			}
 		}
 

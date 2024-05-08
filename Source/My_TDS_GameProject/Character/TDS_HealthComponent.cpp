@@ -72,7 +72,7 @@ void UTDS_HealthComponent::ChangeHealthValue_OnServer_Implementation(float Chang
 				{
 					Health = Health + (ChangeValue + Shield);
 					Shield = 0;
-					UE_LOG(LogTemp, Warning, TEXT("Health"));
+					//UE_LOG(LogTemp, Warning, TEXT("Health"));
 					//OnHealthChange.Broadcast(Health, ChangeValue);
 					HealthChangeEvent_Multicast(Health, ChangeValue);
 					//OnShieldChange.Broadcast(Shield, ChangeValue);
@@ -89,7 +89,8 @@ void UTDS_HealthComponent::ChangeHealthValue_OnServer_Implementation(float Chang
 					
 					//OnShieldChange.Broadcast(Shield, ChangeValue);
 					ShieldChangeEvent_Multicast(Shield, ChangeValue);
-					UE_LOG(LogTemp, Warning, TEXT("Shield"));
+					CoolDownShieldEnd();
+					//UE_LOG(LogTemp, Warning, TEXT("Shield"));
 				}
 				
 			}	
@@ -97,7 +98,7 @@ void UTDS_HealthComponent::ChangeHealthValue_OnServer_Implementation(float Chang
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("NOSHIELD!!!"))
+			//UE_LOG(LogTemp, Warning, TEXT("NOSHIELD!!!"))
 		}
 		
 
@@ -161,14 +162,14 @@ void UTDS_HealthComponent::ChangeShieldValue(float ChangeValue)
 		}
 	}
 
-	if (GetWorld())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("TimerShieldColdown"))
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle_CollDownShieldTimer, this, &UTDS_HealthComponent::CoolDownShieldEnd, CoolDownShieldRecoveryTime, false);
-		UE_LOG(LogTemp, Warning, TEXT("TimerShieldColdown"))
-		UE_LOG(LogTemp, Warning, TEXT("TimerShieldClear"))
-		GetWorld()->GetTimerManager().ClearTimer(TimerHandle_ShieldRecoveryRateTimer);
-	}
+	//if (GetWorld())
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("TimerShieldColdown"))
+	//	GetWorld()->GetTimerManager().SetTimer(TimerHandle_CollDownShieldTimer, this, &UTDS_HealthComponent::CoolDownShieldEnd, CoolDownShieldRecoveryTime, false);
+	//	UE_LOG(LogTemp, Warning, TEXT("TimerShieldColdown"))
+	//	UE_LOG(LogTemp, Warning, TEXT("TimerShieldClear"))
+	//	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_ShieldRecoveryRateTimer);
+	//}
 
 }
 
@@ -176,8 +177,12 @@ void UTDS_HealthComponent::CoolDownShieldEnd()
 {
 	if (GetWorld())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TimerShieldEnd"))
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle_ShieldRecoveryRateTimer, this, &UTDS_HealthComponent::RecoveryShield, ShieldRecoverRate, true);
+		if (!GetWorld()->GetTimerManager().IsTimerActive(TimerHandle_CollDownShieldTimer))
+		{
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle_CollDownShieldTimer, this, &UTDS_HealthComponent::RecoveryShield, ShieldRecoverRate, true);
+
+		}
+		//UE_LOG(LogTemp, Warning, TEXT("TimerShieldEnd"))
 	}
 }
 
@@ -186,13 +191,13 @@ void UTDS_HealthComponent::RecoveryShield()
 	float tmp = Shield;
 	tmp = tmp + ShieldRecoverValue;
 
-	if (tmp > 100.0f)
+	if (tmp >= 100.0f)
 	{
 		Shield = 100.0f;
 		if (GetWorld())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("TimerShieldRecovery"))
-			GetWorld()->GetTimerManager().ClearTimer(TimerHandle_ShieldRecoveryRateTimer);
+			//UE_LOG(LogTemp, Warning, TEXT("TimerShieldRecovery STOP"))
+			GetWorld()->GetTimerManager().ClearTimer(TimerHandle_CollDownShieldTimer);
 		
 		}
 	}

@@ -143,7 +143,7 @@ void UTDS_StateEffect_ExecuteInvulnerability::ExecuteInvul()
 		AMy_TDS_GameProjectCharacter* myNoDamage = Cast <AMy_TDS_GameProjectCharacter>(myActor->GetComponentByClass(AMy_TDS_GameProjectCharacter::StaticClass()));
 		if (myNoDamage)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("INVULNERABILITy"));
+			//UE_LOG(LogTemp, Warning, TEXT("INVULNERABILITy"));
 			myNoDamage->TryAbilityInvul();
 			
 					

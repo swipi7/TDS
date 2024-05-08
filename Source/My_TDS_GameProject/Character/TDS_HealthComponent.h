@@ -36,7 +36,7 @@ public:
 		FOnShieldChange OnShieldChange;
 
 	FTimerHandle TimerHandle_CollDownShieldTimer;
-	FTimerHandle TimerHandle_ShieldRecoveryRateTimer;
+	//FTimerHandle TimerHandle_ShieldRecoveryRateTimer;
 
 protected:
 	// Called when the game starts
@@ -53,7 +53,9 @@ protected:
 	UPROPERTY(Replicated)
 		bool bIsAlive = true;
 private:
+	UPROPERTY(Replicated)
 	float Shield = 0.0f;
+	UPROPERTY(Replicated)
 	float Health = 0.0f;
 
 public:	
