@@ -80,7 +80,8 @@ void UTDS_HealthComponent::ChangeHealthValue_OnServer_Implementation(float Chang
 					if (Health <= 0)
 					{
 						Health = 0;
-						OnDead.Broadcast();
+						DeadEvent_Multicast();
+						bIsAlive = false;
 					}
 				}
 				else
