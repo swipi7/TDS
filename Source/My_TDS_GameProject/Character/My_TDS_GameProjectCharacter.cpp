@@ -705,7 +705,12 @@ void AMy_TDS_GameProjectCharacter::CharDead()
 
 		GetWorldTimerManager().SetTimer(TimerHandle_RagDollTimer, this, &AMy_TDS_GameProjectCharacter::EnableRagDoll_Multicast, TimeAnim, false);
 		
+		SetLifeSpan(20.0f);
 		
+		if (GetCurrentWeapon())
+		{
+			GetCurrentWeapon()->SetLifeSpan(20.0f);
+		}
 	}
 	else
 	{
