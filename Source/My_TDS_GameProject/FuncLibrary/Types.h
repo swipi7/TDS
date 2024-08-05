@@ -232,10 +232,10 @@ struct FWeaponInfo : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HitEffect ")
 		UDecalComponent* DecalOnHit = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Anim ")
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Anim ")
 		UAnimMontage* AnimCharFire = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Anim ")
-		UAnimMontage* AnimCharReload = nullptr;
+		UAnimMontage* AnimCharReload = nullptr;*/
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh ")

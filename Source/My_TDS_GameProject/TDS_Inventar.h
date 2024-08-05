@@ -63,6 +63,7 @@ public:
 	int32 GetWeaponIndexSlotByName(FName IdWeaponName);
 	FName GetWeaponNameBySlotIndex(int32 indexSlot);
 	void SetAdditionalInfoWeapon(int32 IndexWeapon, FAdditionalWeaponInfo NewInfo);
+	bool GetWeaponTypeByNameWeapon(FName IdWeaponName, EWeaponType &WeaponType);
 
 	UFUNCTION(BlueprintCallable)
 	void AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 CoutChangeAmmo);
@@ -78,6 +79,9 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Interface")
 		void TryGetWeaponToInventory_OnServer(AActor* PickUpActor, FWeaponSlot NewWeapon);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventar")
+		bool SwitchWeaponByIndex(int32 IndexWeaponToChange, int32 PreviosIndex, FAdditionalWeaponInfo PreviosWeaponInfo);
+
 	UFUNCTION(BlueprintCallable, Category = "Interface")
 		bool GetDropItemInfoFromInventory(int32 IndexSlot, FDropItem& DropItemInfo);
 
@@ -87,14 +91,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventar")
 		TArray<FAmmoSlot> GetAmmoSlot();
 
+
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Inventar")
 		void InitInventory_OnServer(const TArray<FWeaponSlot>& NewWeaponSlotsInfo, const TArray<FAmmoSlot>& NewAmmoSlotsInfo);
 
 	UFUNCTION(NetMulticast, Reliable, BlueprintCallable, Category = "Inventar")
 		void AmmoChangeEvent_Multicast(EWeaponType TypeWeapon, int32 Cout);
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 		void SwitchWeaponEvent_OnServer(FName WeaponName, FAdditionalWeaponInfo AdditionalInfo, int32 IndexSlot);
+
+	UFUNCTION(NetMulticast, Reliable)
+		void WeaponAdditionalInfoChangeEvent_Multicast(int32 IndexSlot, FAdditionalWeaponInfo AdditionalInfo);
+
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
+		void WeaponAmmoEmptyEvemt_Multicast(EWeaponType TypeWeapon);
+
+	UFUNCTION(NetMulticast, Reliable)
+		void WeaponAmmoAviable_Multicast(EWeaponType TypeWeapon);
+
+	UFUNCTION(NetMulticast, Reliable)
+		void UpdateWeaponSlotsEvent_Multicast(int32 IndexSlotChange, FWeaponSlot NewInfo);
+
+
 
 
 };

@@ -213,10 +213,12 @@ void AWeaponDefaults::Fire()
 		AnimToPlay = WeaponSetting.AnimWeaponInfo.AnimCharFireAim;
 	else
 		AnimToPlay = WeaponSetting.AnimWeaponInfo.AnimCharFire;
+
 	if (WeaponSetting.AnimWeaponInfo.AnimWeaponFire)
 	{
 		AnimWeaponStart_Multicast(WeaponSetting.AnimWeaponInfo.AnimWeaponFire);
 	}
+
 	if (WeaponSetting.ShellBullets.DropMesh)
 	{
 		if (WeaponSetting.ShellBullets.DropMeshTime < 0.0f)
@@ -646,9 +648,7 @@ void AWeaponDefaults::ShellDropFire_Multicast_Implementation(UStaticMesh* DropMe
 
 void AWeaponDefaults::AnimWeaponStart_Multicast_Implementation(UAnimMontage* Anim)
 {
-	if (Anim
-		&& SkeletalMeshWeapon
-		&& SkeletalMeshWeapon->GetAnimInstance())//Bad Code? maybe best way init local variable or in func
+	if (Anim && SkeletalMeshWeapon && SkeletalMeshWeapon->GetAnimInstance())//Bad Code? maybe best way init local variable or in func
 	{
 		SkeletalMeshWeapon->GetAnimInstance()->Montage_Play(Anim);
 	}
@@ -687,6 +687,7 @@ void AWeaponDefaults::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
 	DOREPLIFETIME(AWeaponDefaults, AdditionalWeaponInfo);
 	DOREPLIFETIME(AWeaponDefaults, WeaponReloading);
+	DOREPLIFETIME(AWeaponDefaults, ShootEndLocation);
 	
 	
 }

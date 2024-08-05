@@ -132,8 +132,8 @@ void AMy_TDS_GameProjectCharacter::SetupPlayerInputComponent(UInputComponent* Ne
 
 	NewInputComponent->BindAction((TEXT("ReloadEvent")), EInputEvent::IE_Released, this, &AMy_TDS_GameProjectCharacter::TryReloadWeapon);
 
-	NewInputComponent->BindAction(TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchNextWeapon);
-	NewInputComponent->BindAction(TEXT("TrySwitchPreviosWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon);
+	NewInputComponent->BindAction(TEXT("SwitchNextWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchNextWeapon_OnServer);
+	NewInputComponent->BindAction(TEXT("TrySwitchPreviosWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon_OnServer);
 
 	NewInputComponent->BindAction(TEXT("AbilityAction"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TryAbilityEnabled);
 
@@ -349,6 +349,7 @@ void AMy_TDS_GameProjectCharacter::ChangeMovementState()
 				if (!WalkEnabled && !SprintRunEnabled && AimEnabled && !TrueVector)
 				{
 					NewState = EMovementState::Aim_State;
+					//UE_LOG(LogTemp, Warning, TEXT("AIMMMM"))
 				}
 			}
 		}
@@ -405,7 +406,7 @@ void AMy_TDS_GameProjectCharacter::InitWeapon(FName IdWeaponName, FAdditionalWea
 					myWeapon->AttachToComponent(GetMesh(), Rule, FName("WeaponSocetRightHand"));
 					CurrentWeapon = myWeapon;
 
-					
+				
 
 					myWeapon->WeaponSetting = myWeaponInfo;
 
@@ -460,6 +461,7 @@ void AMy_TDS_GameProjectCharacter::WeaponReloadStart(UAnimMontage* Anim)
 {
 
 	WeaponReloadStart_BP(Anim);
+	
 
 }
 
@@ -479,11 +481,12 @@ void AMy_TDS_GameProjectCharacter::WeaponFireStart(UAnimMontage* Anim)
 	if (InventoryComponent && CurrentWeapon)
 		InventoryComponent->SetAdditionalInfoWeapon(CurrentIndexWeapon, CurrentWeapon->AdditionalWeaponInfo);
 	WeaponFireStart_BP(Anim);
+	
 }
 
 void AMy_TDS_GameProjectCharacter::WeaponFireStart_BP_Implementation(UAnimMontage* Anim)
 {
-
+	UE_LOG(LogTemp, Warning, TEXT("WeaponOtdacha"));
 }
 
 
@@ -532,7 +535,7 @@ UDecalComponent* AMy_TDS_GameProjectCharacter::GetCursorToWorld()
 	return CurrentCursor;
 }
 
-void AMy_TDS_GameProjectCharacter::TrySwitchNextWeapon()
+void AMy_TDS_GameProjectCharacter::TrySwitchNextWeapon_OnServer_Implementation()
 {
 	if (InventoryComponent->WeaponSlots.Num() > 1)
 	{
@@ -555,7 +558,7 @@ void AMy_TDS_GameProjectCharacter::TrySwitchNextWeapon()
 	}
 }
 
-void AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon()
+void AMy_TDS_GameProjectCharacter::TrySwitchPreviosWeapon_OnServer_Implementation()
 {
 	if (InventoryComponent->WeaponSlots.Num() > 1)
 	{
@@ -670,6 +673,7 @@ void AMy_TDS_GameProjectCharacter::PlayAnim_Multicast_Implementation(UAnimMontag
 	if (GetMesh() && GetMesh()->GetAnimInstance())
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(Anim);
+		
 	}
 }
 

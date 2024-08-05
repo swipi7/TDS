@@ -196,8 +196,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 		UDecalComponent* GetCursorToWorld();
 
-	void TrySwitchNextWeapon();
-	void TrySwitchPreviosWeapon();
+	UFUNCTION(Server, Reliable)
+	void TrySwitchNextWeapon_OnServer();
+	UFUNCTION(Server, Reliable)
+	void TrySwitchPreviosWeapon_OnServer();
 
 	//Ability
 	void TryAbilityEnabled();

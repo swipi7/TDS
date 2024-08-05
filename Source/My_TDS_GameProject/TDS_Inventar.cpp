@@ -438,11 +438,17 @@ void UTDS_Inventar::SetAdditionalInfoWeapon(int32 IndexWeapon, FAdditionalWeapon
 				WeaponSlots[i].AdditionalInfo = NewInfo;
 				bIsFind = true;
 				
-				OnWeaponAdditionalInfoChange.Broadcast(IndexWeapon, NewInfo);
+				//OnWeaponAdditionalInfoChange.Broadcast(IndexWeapon, NewInfo);
+				WeaponAdditionalInfoChangeEvent_Multicast(IndexWeapon, NewInfo);
 			}
 			i++;
 		}
 	}
+}
+
+bool UTDS_Inventar::GetWeaponTypeByNameWeapon(FName IdWeaponName, EWeaponType& WeaponType)
+{
+	return false;
 }
 
 void UTDS_Inventar::AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 CoutChangeAmmo)
@@ -491,7 +497,16 @@ bool UTDS_Inventar::CheckAmmoForWeapon(EWeaponType TypeWeapon, int8 &AviableAmmo
 		i++;
 	}
 
-	OnWeaponAmmoEmpty.Broadcast(TypeWeapon);
+	if (AviableAmmoForWeapon <= 0)
+	{
+		WeaponAmmoEmptyEvemt_Multicast(TypeWeapon);
+	}
+	else
+	{
+		WeaponAmmoAviable_Multicast(TypeWeapon);
+	}
+
+	//OnWeaponAmmoEmpty.Broadcast(TypeWeapon);
 
 	return false;
 }
@@ -535,7 +550,8 @@ bool UTDS_Inventar::SwitchWeaponToInventory(FWeaponSlot NewWeapon, int32 IndexSl
 
 		SwitchWeaponToIndex(CurrentIndexWeaponChar, -1, NewWeapon.AdditionalInfo, true);
 
-		OnUpdateWeaponSlots.Broadcast(IndexSlot, NewWeapon);
+		UpdateWeaponSlotsEvent_Multicast(IndexSlot, NewWeapon);
+		//OnUpdateWeaponSlots.Broadcast(IndexSlot, NewWeapon);
 		result = true;
 	}
 	return result;
@@ -550,7 +566,8 @@ void UTDS_Inventar::TryGetWeaponToInventory_OnServer_Implementation(AActor* Pick
 		{
 			WeaponSlots[indexSlot] = NewWeapon;
 
-			OnUpdateWeaponSlots.Broadcast(indexSlot, NewWeapon);
+			UpdateWeaponSlotsEvent_Multicast(indexSlot, NewWeapon);
+			//OnUpdateWeaponSlots.Broadcast(indexSlot, NewWeapon);
 			
 			if (PickUpActor)
 			{
@@ -590,9 +607,60 @@ TArray<FAmmoSlot> UTDS_Inventar::GetAmmoSlot()
 	return AmmoSlots;
 }
 
+bool UTDS_Inventar::SwitchWeaponByIndex(int32 IndexWeaponToChange, int32 PreviosIndex, FAdditionalWeaponInfo PreviosWeaponInfo)
+{
+	bool bIsSuccess = false;
+	FName ToSwitchIdWeapon;
+	FAdditionalWeaponInfo ToSwitchAdditionalInfo;
+
+	ToSwitchIdWeapon = GetWeaponNameBySlotIndex(IndexWeaponToChange);
+	ToSwitchAdditionalInfo = GetAdditionalInfoWeapon(IndexWeaponToChange);
+
+	if (!ToSwitchIdWeapon.IsNone())
+	{
+		SetAdditionalInfoWeapon(PreviosIndex, PreviosWeaponInfo);
+
+		SwitchWeaponEvent_OnServer(ToSwitchIdWeapon, ToSwitchAdditionalInfo, IndexWeaponToChange);
+
+		EWeaponType ToSwitchWeaponType;
+		if (GetWeaponTypeByNameWeapon(ToSwitchIdWeapon, ToSwitchWeaponType))
+		{
+			int8 AviableAmmoForWeapon = -1;
+			if (CheckAmmoForWeapon(ToSwitchWeaponType, AviableAmmoForWeapon))
+			{
+
+			}
+		}
+		bIsSuccess = true;
+	}
+	return bIsSuccess;
+}
+
+void UTDS_Inventar::WeaponAmmoEmptyEvemt_Multicast_Implementation(EWeaponType TypeWeapon)
+{
+	OnWeaponAmmoEmpty.Broadcast(TypeWeapon);
+}
+
+void UTDS_Inventar::WeaponAmmoAviable_Multicast_Implementation(EWeaponType TypeWeapon)
+{
+	OnWeaponAmmoAviable.Broadcast(TypeWeapon);
+}
+
+void UTDS_Inventar::WeaponAdditionalInfoChangeEvent_Multicast_Implementation(int32 IndexSlot, FAdditionalWeaponInfo AdditionalInfo)
+{
+	OnWeaponAdditionalInfoChange.Broadcast(IndexSlot, AdditionalInfo);
+}
+
+void UTDS_Inventar::UpdateWeaponSlotsEvent_Multicast_Implementation(int32 IndexSlotChange, FWeaponSlot NewInfo)
+{
+	OnUpdateWeaponSlots.Broadcast(IndexSlotChange, NewInfo);
+}
+
+
 void UTDS_Inventar::SwitchWeaponEvent_OnServer_Implementation(FName WeaponName, FAdditionalWeaponInfo AdditionalInfo, int32 IndexSlot)
 {
 	OnSwitchWeapon.Broadcast(WeaponName, AdditionalInfo, IndexSlot);
+	
 }
 
 void UTDS_Inventar::AmmoChangeEvent_Multicast_Implementation(EWeaponType TypeWeapon, int32 Cout)
@@ -613,7 +681,8 @@ void UTDS_Inventar::InitInventory_OnServer_Implementation(const TArray<FWeaponSl
 	if (WeaponSlots.IsValidIndex(0))
 	{
 		if (!WeaponSlots[0].NameItem.IsNone())
-			OnSwitchWeapon.Broadcast(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo, 0);
+			//OnSwitchWeapon.Broadcast(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo, 0);
+			SwitchWeaponEvent_OnServer(WeaponSlots[0].NameItem, WeaponSlots[0].AdditionalInfo, 0);
 	}
 }
 

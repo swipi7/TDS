@@ -13,6 +13,7 @@
 
 
 
+
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWeaponFireStart);//ToDo Delegate on event weapon fire - Anim char, state char...
 //class UAnimMontage;
 
@@ -105,6 +106,7 @@ public:
 	//Dispersion
 	UPROPERTY(Replicated)
 	bool ShouldReduceDispersion = false;
+
 	float CurrentDispersion = 0.0f;
 	float CurrentDispersionMax = 1.0f;
 	float CurrentDispersionMin = 0.1f;
