@@ -574,10 +574,16 @@ bool AWeaponDefaults::CheckCanWeaponReload()
 			if (!MyInventary->CheckAmmoForWeapon(WeaponSetting.WeaponType, AviableAmmoForWeapon))
 			{
 				result = false;
+				//MyInventary->OnWeaponNotHaveRound.Broadcast(MyInventary->GetWeaponIndexSlotByName());
 			}
+			//else
+			//{
+				//MyInventary->OnWeaponHaveRound.Broadcast(MyInventary->GetWeaponIndexSlotByName(IdWeaponName));
+			//}
 		}
 
 	}
+
 	return result;
 }
 

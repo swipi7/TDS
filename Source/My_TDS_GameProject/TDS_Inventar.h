@@ -13,6 +13,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWeaponAdditionalInfoChange, int3
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponAmmoEmpty, EWeaponType, WeaponType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponAmmoAviable, EWeaponType, WeaponType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUpdateWeaponSlots, int32, IndexSlotChange, FWeaponSlot, NewInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponNotHaveRound, int32, IndexSlotWeapon);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponHaveRound, int32, IndexSlotWeapon);
 
 
 
@@ -37,6 +39,10 @@ public:
 		FOnWeaponAmmoAviable OnWeaponAmmoAviable;
 	UPROPERTY(BlueprintAssignable, EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 		FOnUpdateWeaponSlots OnUpdateWeaponSlots;
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+		FOnWeaponNotHaveRound OnWeaponNotHaveRound;
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+		FOnWeaponHaveRound OnWeaponHaveRound;
 
 
 protected:

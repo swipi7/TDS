@@ -448,7 +448,17 @@ void UTDS_Inventar::SetAdditionalInfoWeapon(int32 IndexWeapon, FAdditionalWeapon
 
 bool UTDS_Inventar::GetWeaponTypeByNameWeapon(FName IdWeaponName, EWeaponType& WeaponType)
 {
-	return false;
+	bool bIsFind = false;
+	FWeaponInfo OutInfo;
+	WeaponType = EWeaponType::RifleType;
+	UTDS_GameInstance* myGI = Cast<UTDS_GameInstance>(GetWorld()->GetGameInstance());
+	if (myGI)
+	{
+		myGI->GetWeaponInfoByName(IdWeaponName, OutInfo);
+		WeaponType = OutInfo.WeaponType;
+		bIsFind = true;
+	}
+	return bIsFind;
 }
 
 void UTDS_Inventar::AmmoSlotChangeValue(EWeaponType TypeWeapon, int32 CoutChangeAmmo)
