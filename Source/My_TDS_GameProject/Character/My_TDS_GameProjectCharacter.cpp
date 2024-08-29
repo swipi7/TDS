@@ -138,11 +138,68 @@ void AMy_TDS_GameProjectCharacter::SetupPlayerInputComponent(UInputComponent* Ne
 	NewInputComponent->BindAction(TEXT("AbilityAction"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TryAbilityEnabled);
 
 	NewInputComponent->BindAction(TEXT("AbilityInvul"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TryAbilityInvul);
+
+	NewInputComponent->BindAction(TEXT("DropCurrentWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::DropCurrentWeapon);
+
+	/*TArray<FKey> HotKeys;
+	HotKeys.Add(EKeys::One);
+	HotKeys.Add(EKeys::Two);
+	HotKeys.Add(EKeys::Three);
+	HotKeys.Add(EKeys::Four);
+	HotKeys.Add(EKeys::Five);
+	HotKeys.Add(EKeys::Six);
+	HotKeys.Add(EKeys::Seven);
+	HotKeys.Add(EKeys::Eight);
+	HotKeys.Add(EKeys::Nine);
+	HotKeys.Add(EKeys::Zero);
+
+	NewInputComponent->BindKey(HotKeys[1], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<1>);
+	NewInputComponent->BindKey(HotKeys[2], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<2>);
+	NewInputComponent->BindKey(HotKeys[3], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<3>);
+	NewInputComponent->BindKey(HotKeys[4], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<4>);
+	NewInputComponent->BindKey(HotKeys[5], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<5>);
+	NewInputComponent->BindKey(HotKeys[6], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<6>);
+	NewInputComponent->BindKey(HotKeys[7], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<7>);
+	NewInputComponent->BindKey(HotKeys[8], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<8>);
+	NewInputComponent->BindKey(HotKeys[9], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<9>);
+	NewInputComponent->BindKey(HotKeys[0], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<0>);*/
 }
 
 bool AMy_TDS_GameProjectCharacter::bSprintForward()
 {
 	return SprintRunEnabled && TrueVector;
+}
+
+bool AMy_TDS_GameProjectCharacter::TrySwitchWeaponToIndexByKeyInput(int32 ToIndex)
+{
+	bool bIsSuccess = false;
+	if (CurrentWeapon && !CurrentWeapon->WeaponReloading && InventoryComponent->WeaponSlots.IsValidIndex(ToIndex))
+	{
+		if (CurrentIndexWeapon != ToIndex && InventoryComponent)
+		{
+			int32 OldIndex = CurrentIndexWeapon;
+			FAdditionalWeaponInfo OldInfo;
+
+			if (CurrentWeapon)
+			{
+				OldInfo = CurrentWeapon->AdditionalWeaponInfo;
+				if (CurrentWeapon->WeaponReloading)
+					CurrentWeapon->CancelReload();
+			}
+
+			bIsSuccess = InventoryComponent->SwitchWeaponByIndex(ToIndex, OldIndex, OldInfo);
+		}
+	}
+	return bIsSuccess;
+}
+
+void AMy_TDS_GameProjectCharacter::DropCurrentWeapon()
+{
+	if (InventoryComponent)
+	{
+		FDropItem ItemInfo;
+		InventoryComponent->DropWeapobByIndex_OnServer(CurrentIndexWeapon);
+	}
 }
 
 bool AMy_TDS_GameProjectCharacter::CharSprint()

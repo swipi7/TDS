@@ -68,7 +68,7 @@ public:
 	FAdditionalWeaponInfo GetAdditionalInfoWeapon(int32 IndexWeapon);
 	int32 GetWeaponIndexSlotByName(FName IdWeaponName);
 	FName GetWeaponNameBySlotIndex(int32 indexSlot);
-	void SetAdditionalInfoWeapon(int32 IndexWeapon, FAdditionalWeaponInfo NewInfo);
+	void SetAdditionalInfoWeapon(int32 indexSlot, FAdditionalWeaponInfo NewInfo);
 	bool GetWeaponTypeByNameWeapon(FName IdWeaponName, EWeaponType &WeaponType);
 
 	UFUNCTION(BlueprintCallable)
@@ -84,6 +84,8 @@ public:
 		bool SwitchWeaponToInventory(FWeaponSlot NewWeapon, int32 IndexSlot, int32 CurrentIndexWeaponChar, FDropItem& DropItemInfo);
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Interface")
 		void TryGetWeaponToInventory_OnServer(AActor* PickUpActor, FWeaponSlot NewWeapon);
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Interface")
+		void DropWeapobByIndex_OnServer(int32 ByIndex);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventar")
 		bool SwitchWeaponByIndex(int32 IndexWeaponToChange, int32 PreviosIndex, FAdditionalWeaponInfo PreviosWeaponInfo);

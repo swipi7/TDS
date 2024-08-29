@@ -25,3 +25,5 @@ void ITDS_IGameActor::AddEffect(UTDS_StateEffect* newEffect)
 {
 
 }
+
+

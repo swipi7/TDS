@@ -61,21 +61,33 @@ bool UTDS_GameInstance::GetWeaponInfoByWeaponName(FName NameItem, FDropItem& Out
 bool UTDS_GameInstance::GetDropItemInfoByName(FName NameItem, FDropItem& OutInfo)
 {
 	bool bIsFind = false;
-	//FDropItem* DropItemInfoRow;
 
 		if (DropItemInfoTable)
 		{
-			FDropItem* DropItemInfoRow = DropItemInfoTable->FindRow<FDropItem>(NameItem, "", false);
-			if (DropItemInfoRow)
+			FDropItem* DropItemInfoRow;
+			TArray<FName>RowNames = DropItemInfoTable->GetRowNames();
+			/*FDropItem**/ //DropItemInfoRow = DropItemInfoTable->FindRow<FDropItem>(NameItem, "", false);
+			int8 i = 0;
+			while (i < RowNames.Num() && !bIsFind)
 			{
-				bIsFind = true;
-				OutInfo = *DropItemInfoRow;
+				DropItemInfoRow = DropItemInfoTable->FindRow<FDropItem>(NameItem, "", false);
+				if (DropItemInfoRow->WeaponInfo.NameItem == NameItem)
+				{
+					bIsFind = true;
+					OutInfo = *DropItemInfoRow;
 
+				}
 			}
+			
 		}
 		else
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("UTPSGameInstance::GetDropItemInfoByName - DropItemInfoTable -NULL"));
+			UE_LOG(LogTemp, Warning, TEXT("UTPSGameInstance::GetDropItemInfoByName - DropItemInfoTable -NULL"));
 		}
 	return bIsFind;
 }
+
+//bool UTDS_GameInstance::Execute_DropWeaponToWorld()
+//{
+//	return false;
+//}

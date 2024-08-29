@@ -30,4 +30,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		bool GetDropItemInfoByName(FName NameItem, FDropItem& OutInfo);
 
+	/*UFUNCTION(BlueprintCallable)
+		bool Execute_DropWeaponToWorld();*/
+
 };

@@ -66,6 +66,7 @@ void AProjectile_Bomborgmebt::ImpactProjectile()
 
 void AProjectile_Bomborgmebt::Explose()
 {
+	TimerEnabled = false;
 	if (DebugExplodeShow)
 	{
 		DrawDebugSphere(GetWorld(), GetActorLocation(), ProjectileSetting.ProjectileMaxRadiusDamage, 12, FColor::Green, false, 12.0f);
@@ -73,7 +74,6 @@ void AProjectile_Bomborgmebt::Explose()
 	}
 	
 
-	TimerEnabled = false;
 	if (ProjectileSetting.ExploseFX)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ProjectileSetting.ExploseFX, GetActorLocation(), GetActorRotation(), FVector(1.0f));
@@ -88,10 +88,15 @@ void AProjectile_Bomborgmebt::Explose()
 		ProjectileSetting.ExploseMaxDamage,
 		ProjectileSetting.ExploseMaxDamage * 0.2f,
 		GetActorLocation(),
-		1000.0f,
-		2000.0f,
+		ProjectileSetting.ProjectileMinRadiusDamage,
+		ProjectileSetting.ProjectileMaxRadiusDamage,
 		5,
-		NULL, IgnoredActor, this, nullptr);
+		NULL, IgnoredActor, nullptr, nullptr);
+		/*GetActorLocation(),
+		ProjectileSetting.ProjectileMinRadiusDamage,
+		ProjectileSetting.ProjectileMaxRadiusDamage,
+		5,
+		NULL, IgnoredActor,nullptr,nullptr);*/
 
 	this->Destroy();
 }

@@ -26,6 +26,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "true")
 		UTDS_HealthComponent* HealthComponent;
 
+	template<int32 Id>
+	void TKeyPressed()
+	{
+		TrySwitchWeaponToIndexByKeyInput(Id);
+	}
+
 public:
 	AMy_TDS_GameProjectCharacter();
 
@@ -85,6 +91,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		bool bIsMovingForward = false;
 
+	bool TrySwitchWeaponToIndexByKeyInput(int32 ToIndex);
+
+	void DropCurrentWeapon();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		TArray<UAnimMontage*> DeadsAnim;
@@ -144,6 +153,8 @@ public:
 		void InputAttackPressed();
 	UFUNCTION()
 		void InputAttackReleased();
+
+
 
 	float AxisX = 0.0f;
 	float AxisY = 0.0f;

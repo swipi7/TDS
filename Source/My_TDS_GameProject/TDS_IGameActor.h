@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include  "Weapon/TDS_StateEffect.h"
+#include "Types.h"
+#include "Weapon/TDS_StateEffect.h"
 
 #include "TDS_IGameActor.generated.h"
 
@@ -35,4 +36,7 @@ public:
 	virtual TArray<UTDS_StateEffect*> GetAllCurrentEffects();
 	virtual void RemoveEffect(UTDS_StateEffect* RemoveEffect);
 	virtual void AddEffect(UTDS_StateEffect* newEffect);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void DropWeaponToWorld(FDropItem DropItemInfo);
 };
