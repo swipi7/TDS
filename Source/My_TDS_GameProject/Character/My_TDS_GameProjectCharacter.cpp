@@ -94,7 +94,7 @@ void AMy_TDS_GameProjectCharacter::Tick(float DeltaSeconds)
 
 	MovementTick(DeltaSeconds);
 	//bIsMovingForward = UKismetMathLibrary::EqualEqual_VectorVector(TreceForward(), TreceVeloCity(), 20.0f);
-	ChangeMovementState();
+	//ChangeMovementState();
 	CharSprint();
 
 
@@ -264,6 +264,42 @@ void AMy_TDS_GameProjectCharacter::InputAttackReleased()
 	AttackCharEvent(false);
 }
 
+void AMy_TDS_GameProjectCharacter::InputWalkPressed()
+{
+	WalkEnabled = true;
+	ChangeMovementState();
+}
+
+void AMy_TDS_GameProjectCharacter::InputWalkReleased()
+{
+	WalkEnabled = false;
+	ChangeMovementState();
+}
+
+void AMy_TDS_GameProjectCharacter::InputSprintPressed()
+{
+	SprintRunEnabled = true;
+	ChangeMovementState();
+}
+
+void AMy_TDS_GameProjectCharacter::InputSprintReleased()
+{
+	SprintRunEnabled = false;
+	ChangeMovementState();
+}
+
+void AMy_TDS_GameProjectCharacter::InputAimPressed()
+{
+	AimEnabled = true;
+	ChangeMovementState();
+}
+
+void AMy_TDS_GameProjectCharacter::InputAimReleased()
+{
+	AimEnabled = false;
+	ChangeMovementState();
+}
+
 void AMy_TDS_GameProjectCharacter::MovementTick(float DeltaTime)
 {
 	if (HealthComponent && HealthComponent->GetIsAlive())
@@ -275,7 +311,7 @@ void AMy_TDS_GameProjectCharacter::MovementTick(float DeltaTime)
 			AddMovementInput(FVector(0.0f, 1.0f, 0.0f), AxisY);
 
 			FString SEnum = UEnum::GetValueAsString(GetMovementState());
-			//UE_LOG(LogMy_TDS_GameProject_Net, Warning, TEXT("Movement State - %s"), *SEnum);
+			UE_LOG(LogMy_TDS_GameProject_Net, Error, TEXT("Movement State - %s"), *SEnum);
 
 			if (MovementState == EMovementState::SprintRun_State)
 			{
@@ -388,25 +424,31 @@ void AMy_TDS_GameProjectCharacter::ChangeMovementState()
 	}
 	else
 	{
-		if (bSprintForward())
+		if (SprintRunEnabled)
 		{
 			WalkEnabled = false;
 			AimEnabled = false;
 			NewState = EMovementState::SprintRun_State;
 		}
-
 		else
 		{
-			if (WalkEnabled && !SprintRunEnabled && !AimEnabled && !TrueVector)
+			if (WalkEnabled && !SprintRunEnabled && AimEnabled)
 			{
-				NewState = EMovementState::Walk_State;
+				NewState = EMovementState::AimWalk_State;
 			}
 			else
 			{
-				if (!WalkEnabled && !SprintRunEnabled && AimEnabled && !TrueVector)
+				if (WalkEnabled && !SprintRunEnabled && !AimEnabled)   // && !TrueVector
 				{
-					NewState = EMovementState::Aim_State;
-					//UE_LOG(LogTemp, Warning, TEXT("AIMMMM"))
+					NewState = EMovementState::Walk_State;
+				}
+				else
+				{
+					if (!WalkEnabled && !SprintRunEnabled && AimEnabled)   // && TrueVector
+					{
+						NewState = EMovementState::Aim_State;
+						
+					}
 				}
 			}
 		}
@@ -862,7 +904,6 @@ void AMy_TDS_GameProjectCharacter::SetMovementState_Multicast_Implementation(EMo
 {
 	MovementState = NewState;
 	CharacterUpdate();
-
 }
 
 void AMy_TDS_GameProjectCharacter::TryReloadWeapon_OnServer_Implementation()

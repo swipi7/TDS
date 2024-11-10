@@ -154,6 +154,14 @@ public:
 	UFUNCTION()
 		void InputAttackReleased();
 
+		void InputWalkPressed();
+		void InputWalkReleased();
+
+		void InputSprintPressed();
+		void InputSprintReleased();
+
+		void InputAimPressed();
+		void InputAimReleased();
 
 
 	float AxisX = 0.0f;

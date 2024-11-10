@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "My_TDS_GameProject/ProjectileDefault.h"
+#include "Particles/ParticleSystemComponent.h"
+
 #include "Projectile_Bomborgmebt.generated.h"
 
 UCLASS()
@@ -24,18 +26,27 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	
 	void TimerExplose(float Deltatime);
 
+	
 	virtual void BulletCollisionSphereHit(class UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 
+	
 	virtual void ImpactProjectile() override;
 
-	void Explose();
+	UFUNCTION(NetMulticast, Unreliable)
+	void Explose_Server();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grinade")
 	bool TimerEnabled = false;
+
 	float TimerToExplose = 0.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grinade")
 	float TimeToExplose = 5.0f;
 
+	UFUNCTION(NetMulticast, Reliable)
+		void SpawnExplodeFX_Multicast(UParticleSystem* FxTemplate);
+	UFUNCTION(NetMulticast, Reliable)
+		void SpawnExplodeSound_Multicast(USoundBase* ExplodeSound);
 };

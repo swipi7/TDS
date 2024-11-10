@@ -4,6 +4,7 @@
 #include "Weapon/Projectile_Bomborgmebt.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Net/UnrealNetwork.h"
 #include "My_TDS_GameProjectCharacter.h"
 
 int32 DebugExplodeShow = 0;
@@ -15,6 +16,8 @@ AProjectile_Bomborgmebt::AProjectile_Bomborgmebt()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SetReplicates(true);
+	//SetIsReplicatedByDefault(true)
 }
 
 // Called when the game starts or when spawned
@@ -28,7 +31,10 @@ void AProjectile_Bomborgmebt::BeginPlay()
 void AProjectile_Bomborgmebt::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	TimerExplose(DeltaTime);
+	if (HasAuthority())
+	{
+		TimerExplose(DeltaTime);
+	}
 
 }
 
@@ -38,7 +44,7 @@ void AProjectile_Bomborgmebt::TimerExplose(float Deltatime)
 	{
 		if (TimerToExplose > TimeToExplose)
 		{
-			Explose();
+			Explose_Server();
 		}
 		else
 		{
@@ -51,7 +57,7 @@ void AProjectile_Bomborgmebt::BulletCollisionSphereHit(UPrimitiveComponent* HitC
 {
 	if (Hit.bBlockingHit)
 	{
-		Explose();
+		Explose_Server();
 		Super::BulletCollisionSphereHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 	}
 }
@@ -64,7 +70,18 @@ void AProjectile_Bomborgmebt::ImpactProjectile()
 	TimerEnabled = true;
 }
 
-void AProjectile_Bomborgmebt::Explose()
+void AProjectile_Bomborgmebt::SpawnExplodeSound_Multicast_Implementation(USoundBase* ExplodeSound)
+{
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ExplodeSound, GetActorLocation());
+}
+
+void AProjectile_Bomborgmebt::SpawnExplodeFX_Multicast_Implementation(UParticleSystem* FxTemplate)
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FxTemplate, GetActorLocation(), GetActorRotation(), FVector(1.0f));
+}
+
+
+void AProjectile_Bomborgmebt::Explose_Server_Implementation()
 {
 	TimerEnabled = false;
 	if (DebugExplodeShow)
@@ -76,11 +93,11 @@ void AProjectile_Bomborgmebt::Explose()
 
 	if (ProjectileSetting.ExploseFX)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ProjectileSetting.ExploseFX, GetActorLocation(), GetActorRotation(), FVector(1.0f));
+		SpawnExplodeFX_Multicast(ProjectileSetting.ExploseFX);
 	}
 	if (ProjectileSetting.ExploseSound)
 	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ProjectileSetting.ExploseSound, GetActorLocation());
+		SpawnExplodeSound_Multicast(ProjectileSetting.ExploseSound);
 	}
 
 	TArray<AActor*> IgnoredActor;
