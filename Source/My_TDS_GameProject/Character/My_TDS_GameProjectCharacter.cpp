@@ -804,7 +804,9 @@ void AMy_TDS_GameProjectCharacter::CharDead()
 		}
 		//UnPossessed();
 		//Timer Ragdoll
-		AttackCharEvent(false);
+		//AttackCharEvent(false);
+
+		float DecraeseAnimTimer = FMath::FRandRange(0.2f, 1.0f);
 
 		GetWorldTimerManager().SetTimer(TimerHandle_RagDollTimer, this, &AMy_TDS_GameProjectCharacter::EnableRagDoll_Multicast, TimeAnim, false);
 		
@@ -821,6 +823,8 @@ void AMy_TDS_GameProjectCharacter::CharDead()
 		{
 			GetCursorToWorld()->SetVisibility(false);
 		}
+
+		AttackCharEvent(false);
 		
 	}
 
@@ -840,7 +844,9 @@ void AMy_TDS_GameProjectCharacter::EnableRagDoll_Multicast_Implementation()
 {
 	if (GetMesh())
 	{
-		
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
+
 		GetMesh()->SetCollisionObjectType(ECC_PhysicsBody);
 		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);

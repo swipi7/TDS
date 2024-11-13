@@ -38,20 +38,35 @@ void ATDS_EnemyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 }
 
-void ATDS_EnemyCharacter::RemoveEffect(UTDS_StateEffect* RemoveEffect)
+void ATDS_EnemyCharacter::RemoveEffect_Implementation(UTDS_StateEffect* RemoveEffect)
 {
 	Effects.Remove(RemoveEffect);
 
-	SwitchEffect(RemoveEffect, false);
-	EffectRemove = RemoveEffect;
+	if (!RemoveEffect->bIsAutoDestroyParticleEffect)
+	{
+		SwitchEffect(RemoveEffect, false);
+		EffectRemove = RemoveEffect;
+	}
 }
 
-void ATDS_EnemyCharacter::AddEffect(UTDS_StateEffect* newEffect)
+
+
+void ATDS_EnemyCharacter::AddEffect_Implementation(UTDS_StateEffect* newEffect)
 {
 	Effects.Add(newEffect);
 
-	SwitchEffect(newEffect, true);
-	EffectAdd = newEffect;
+	if (!newEffect->bIsAutoDestroyParticleEffect)
+	{
+		SwitchEffect(newEffect, true);
+		EffectAdd = newEffect;
+	}
+	else
+	{
+		if (newEffect->ParticleEffect)
+		{
+			ExecuteEffectAdded_OnServer(newEffect->ParticleEffect);
+		}
+	}
 }
 
 void ATDS_EnemyCharacter::EffectAdd_OnRep()
@@ -68,6 +83,16 @@ void ATDS_EnemyCharacter::EffectRemove_OnRep()
 	{
 		SwitchEffect(EffectRemove, false);
 	}
+}
+
+void ATDS_EnemyCharacter::ExecuteEffectAdded_OnServer_Implementation(UParticleSystem* ExecuteFX)
+{
+	ExecuteEffectAdded_Multicast(ExecuteFX);
+}
+
+void ATDS_EnemyCharacter::ExecuteEffectAdded_Multicast_Implementation(UParticleSystem* ExecuteFX)
+{
+	UTypes::ExecuteEffectAdded(ExecuteFX, this, FVector(0), FName("spine_01"));
 }
 
 void ATDS_EnemyCharacter::SwitchEffect(UTDS_StateEffect* Effect, bool bIsAdd)

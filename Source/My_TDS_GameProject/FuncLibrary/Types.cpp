@@ -4,7 +4,8 @@
 #include "FuncLibrary/Types.h"
 #include "My_TDS_GameProject/My_TDS_GameProject.h"
 #include "TDS_IGameActor.h"
-
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 
 void UTypes::AddEffectBySurfaceType(AActor* TakeEffectActor, FName NameBoneHit, TSubclassOf<UTDS_StateEffect> AddEffectClass, EPhysicalSurface SurfaceType)
 {
@@ -68,5 +69,26 @@ void UTypes::AddEffectBySurfaceType(AActor* TakeEffectActor, FName NameBoneHit, 
 			}
 		}
 
+	}
+}
+
+void UTypes::ExecuteEffectAdded(UParticleSystem* ExecuteFX, AActor* target, FVector offset, FName Socket)
+{
+	if (target)
+	{
+		FName SocketToAttached = Socket;
+		FVector Loc = offset;
+		ACharacter* myCharacter = Cast<ACharacter>(target);
+		if (myCharacter && myCharacter->GetMesh())
+		{
+			UGameplayStatics::SpawnEmitterAttached(ExecuteFX, myCharacter->GetMesh(), SocketToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+		}
+		else
+		{
+			if (target->GetRootComponent())
+			{
+				UGameplayStatics::SpawnEmitterAttached(ExecuteFX, target->GetRootComponent(), SocketToAttached, Loc, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, false);
+			}
+		}
 	}
 }

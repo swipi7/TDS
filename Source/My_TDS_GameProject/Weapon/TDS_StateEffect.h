@@ -35,6 +35,9 @@ public:
 
 	UParticleSystem* ParticleEffect = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setting ExecuteTimer")
+		bool bIsAutoDestroyParticleEffect = false;
+
 	AActor* myActor = nullptr;
 	UPROPERTY(Replicated)
 	FName NameBone;

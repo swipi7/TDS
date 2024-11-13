@@ -33,8 +33,12 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void RemoveEffect(UTDS_StateEffect* RemoveEffect)override;
-	void AddEffect(UTDS_StateEffect* newEffect)override;
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+		void RemoveEffect(UTDS_StateEffect* RemoveEffect);
+	void RemoveEffect_Implementation(UTDS_StateEffect* RemoveEffect);//override;
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+		void AddEffect(UTDS_StateEffect* newEffect);
+	void AddEffect_Implementation(UTDS_StateEffect* newEffect);//override;
 
 	//Effect
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Setting")
@@ -49,12 +53,18 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dbag")
 		TArray<UParticleSystemComponent*> ParticleSystemEffects;
-	;
+	
 
 	UFUNCTION()
 		void EffectAdd_OnRep();
 	UFUNCTION()
 		void EffectRemove_OnRep();
+
+	UFUNCTION(Server, Reliable)
+		void ExecuteEffectAdded_OnServer(UParticleSystem* ExecuteFX);
+
+	UFUNCTION(NetMulticast, Reliable)
+		void ExecuteEffectAdded_Multicast(UParticleSystem* ExecuteFX);
 
 	UFUNCTION()
 		void SwitchEffect(UTDS_StateEffect* Effect, bool bIsAdd);
