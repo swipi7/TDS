@@ -310,8 +310,8 @@ void AMy_TDS_GameProjectCharacter::MovementTick(float DeltaTime)
 			AddMovementInput(FVector(1.0f, 0.0f, 0.0f), AxisX);
 			AddMovementInput(FVector(0.0f, 1.0f, 0.0f), AxisY);
 
-			FString SEnum = UEnum::GetValueAsString(GetMovementState());
-			UE_LOG(LogMy_TDS_GameProject_Net, Error, TEXT("Movement State - %s"), *SEnum);
+			/*FString SEnum = UEnum::GetValueAsString(GetMovementState());
+			UE_LOG(LogMy_TDS_GameProject_Net, Error, TEXT("Movement State - %s"), *SEnum);*/
 
 			if (MovementState == EMovementState::SprintRun_State)
 			{
@@ -585,7 +585,7 @@ void AMy_TDS_GameProjectCharacter::WeaponFireStart(UAnimMontage* Anim)
 
 void AMy_TDS_GameProjectCharacter::WeaponFireStart_BP_Implementation(UAnimMontage* Anim)
 {
-	UE_LOG(LogTemp, Warning, TEXT("WeaponOtdacha"));
+	//UE_LOG(LogTemp, Warning, TEXT("WeaponOtdacha"));
 }
 
 
@@ -798,7 +798,7 @@ void AMy_TDS_GameProjectCharacter::CharDead()
 		{
 			if(APlayerController* CurentController = Cast<APlayerController>(GetController()))
 			{ 
-				UE_LOG(LogTemp, Warning, TEXT("VALID PPOSSESS"));
+				//UE_LOG(LogTemp, Warning, TEXT("VALID PPOSSESS"));
 				CurentController->UnPossess();
 			}
 		}

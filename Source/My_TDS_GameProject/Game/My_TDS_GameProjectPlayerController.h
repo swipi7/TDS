@@ -14,6 +14,17 @@ class AMy_TDS_GameProjectPlayerController : public APlayerController
 public:
 	AMy_TDS_GameProjectPlayerController();
 
+	//UFUNCTION(BlueprintCallable)
+		virtual void Pause() override;
+
+	UFUNCTION(reliable, client)
+		void ClientSetPauser(APlayerState* Pauser);
+
+
+private:
+	UFUNCTION(reliable, server, WithValidation)
+		void ServerPauseGame();
+
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
 	uint32 bMoveToMouseCursor : 1;
@@ -39,7 +50,15 @@ protected:
 	void OnSetDestinationPressed();
 	void OnSetDestinationReleased();
 
+	UFUNCTION(BlueprintCallable)
+	void BP_Pause(bool flag);
+
+	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
+		void Pausesis_Multicast(bool flag);
+
 	virtual void OnUnPossess() override;
+
+
 };
 
 

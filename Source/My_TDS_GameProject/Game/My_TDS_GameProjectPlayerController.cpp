@@ -5,6 +5,7 @@
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "My_TDS_GameProject/Character/My_TDS_GameProjectCharacter.h"
+#include "My_TDS_GameProjectGameMode.h"
 #include "Engine/World.h"
 
 AMy_TDS_GameProjectPlayerController::AMy_TDS_GameProjectPlayerController()
@@ -111,8 +112,39 @@ void AMy_TDS_GameProjectPlayerController::OnSetDestinationReleased()
 	bMoveToMouseCursor = false;
 }
 
+void AMy_TDS_GameProjectPlayerController::BP_Pause(bool flag)
+{
+	SetPause(flag);
+}
+
+void AMy_TDS_GameProjectPlayerController::Pausesis_Multicast_Implementation(bool flag)
+{
+	BP_Pause(flag);
+}
+
 void AMy_TDS_GameProjectPlayerController::OnUnPossess()
 {
 	Super::OnUnPossess();
 }
 
+void AMy_TDS_GameProjectPlayerController::Pause()
+{
+	ServerPauseGame();
+}
+
+bool AMy_TDS_GameProjectPlayerController::ServerPauseGame_Validate()
+{
+	return true;
+}
+
+void AMy_TDS_GameProjectPlayerController::ServerPauseGame_Implementation()
+{
+	bool result = SetPause(!IsPaused());
+}
+
+void AMy_TDS_GameProjectPlayerController::ClientSetPauser_Implementation(APlayerState* Pauser)
+{
+	AWorldSettings* WorldSettings = GetWorldSettings();
+	if (WorldSettings)
+		WorldSettings->Pauser = Pauser;
+}
