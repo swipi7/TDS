@@ -19,7 +19,7 @@ void ATDS_MyGameState::OnRep_IsGamePaused()
     if (!World) return;
     //if (!World || World->IsNetMode(NM_DedicatedServer)) return;
     
-       // 2. Блокируем ввод для всех локальных игроков
+       //  Блокируем ввод для всех локальных игроков
        for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
        {
          APlayerController* PC = It->Get();
@@ -31,26 +31,26 @@ void ATDS_MyGameState::OnRep_IsGamePaused()
 
           }
       }
-      // Применяем паузу ко всем персонажам
+      
 
 
-    // 3. Останавливаем время (опционально)
+    
     UGameplayStatics::SetGlobalTimeDilation(World, bIsGamePaused ? 0.0f : 1.0f);
 }
 
 void ATDS_MyGameState::SetPauseState(bool bPaused)
 {
-    if (HasAuthority()) // Только сервер может менять состояние
+    if (HasAuthority()) 
     {
         bIsGamePaused = bPaused;
-        OnRep_IsGamePaused(); // Принудительный вызов для локального сервера
+        OnRep_IsGamePaused(); 
 
 
         UGameplayStatics::SetGamePaused(GetWorld(), bPaused);
-        // Для надежности: дополнительная синхронизация
+       
         if (GetNetMode() == NM_DedicatedServer || GetNetMode() == NM_ListenServer)
         {
-            ForceNetUpdate(); // Принудительная репликация
+            ForceNetUpdate(); 
         }
     }
 }

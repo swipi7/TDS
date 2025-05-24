@@ -35,8 +35,5 @@ private:
         void OnRep_IsGamePaused();
 
     // Таймер для задержки паузы
-    FTimerHandle PauseTimerHandle;
-
-    // Внутренняя функция паузы (вызывается на сервере)
-    
+    FTimerHandle PauseTimerHandle; 
 };
