@@ -15,15 +15,18 @@ public:
 	AMy_TDS_GameProjectPlayerController();
 
 	//UFUNCTION(BlueprintCallable)
-		virtual void Pause() override;
+		/*virtual void Pause() override;*/
 
-	UFUNCTION(reliable, client)
-		void ClientSetPauser(APlayerState* Pauser);
+	//UFUNCTION(reliable, client)
+	//	void ClientSetPauser(APlayerState* Pauser);
+	
 
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+		bool IsGamePaused() const;
 
 private:
-	UFUNCTION(reliable, server, WithValidation)
-		void ServerPauseGame();
+	//UFUNCTION(reliable, server, WithValidation)
+	//	void ServerPauseGame();
 
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */
@@ -33,7 +36,7 @@ protected:
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
 	// End PlayerController interface
-
+	virtual void UpdateRotation(float DeltaTime) override;
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
 
@@ -50,13 +53,13 @@ protected:
 	void OnSetDestinationPressed();
 	void OnSetDestinationReleased();
 
-	UFUNCTION(BlueprintCallable)
-	void BP_Pause(bool flag);
+	//UFUNCTION(BlueprintCallable)
+	//void BP_Pause(bool flag);
 
-	UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
-		void Pausesis_Multicast(bool flag);
+	/*UFUNCTION(NetMulticast, Reliable, BlueprintCallable)
+		void Pausesis_Multicast(bool flag);*/
 
-	virtual void OnUnPossess() override;
+	//virtual void OnUnPossess() override;
 
 
 };

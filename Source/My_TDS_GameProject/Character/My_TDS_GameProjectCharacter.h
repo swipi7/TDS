@@ -55,6 +55,22 @@ public:
 	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UMyTDS_CharacterHealthComponent* HealthComponent;*/
 
+	//UPROPERTY(ReplicatedUsing = OnRep_BlockRotation, BlueprintReadOnly, Category = "Gameplay")
+	//	bool bIsRotationBlocked;
+
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+		void BlockCharacterRotation(bool bBlock);
+
+protected:
+
+
+	void LookHorizontal(float Value);
+	void LookVertical(float Value);
+
+	bool IsGamePaused() const;
+
+	
+
 private:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -63,6 +79,9 @@ private:
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* CameraBoom;
+
+	FRotator LastRotationBeforePause;
+	bool bRotationBlocked = false;
 
 	/** A decal that projects to the cursor location. */
 	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

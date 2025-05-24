@@ -27,17 +27,17 @@ void AMy_TDS_GameProjectGameMode::PlayCharacterDead()
 
 }
 
-bool AMy_TDS_GameProjectGameMode::SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate /*= FCanUnpause()*/)
-{
-	if (Super::SetPause(PC, CanUnpauseDelegate))
-	{
-		//hack because replication during pause is not working correctly.
-		//CallAllClientsSetWorldSettingsPauser(PC->PlayerState);
-		return true;
-	}
-
-	return false;
-}
+//bool AMy_TDS_GameProjectGameMode::SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate /*= FCanUnpause()*/)
+//{
+//	if (Super::SetPause(PC, CanUnpauseDelegate))
+//	{
+//		//hack because replication during pause is not working correctly.
+//		//CallAllClientsSetWorldSettingsPauser(PC->PlayerState);
+//		return true;
+//	}
+//
+//	return false;
+//}
 
 //void AMy_TDS_GameProjectGameMode::OnVictory()
 //{
@@ -51,19 +51,19 @@ bool AMy_TDS_GameProjectGameMode::SetPause(APlayerController* PC, FCanUnpause Ca
 //	}
 //}
 
-void AMy_TDS_GameProjectGameMode::OnBossDefeated()
-{
-	ATDS_MyGameState* MyGAME = Cast<ATDS_MyGameState>(GetWorld()->GetGameState()); // Используем GameState из AGameMode
-	if (MyGAME && GetLocalRole() == ROLE_Authority) // Только сервер может вызывать паузу
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Boss defeated! Pausing game..."));
-		MyGAME->PauseGameVIN(); // Ставим игру на паузу
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameState is null or not authoritative!"));
-	}
-}
+//void AMy_TDS_GameProjectGameMode::OnBossDefeated()
+//{
+//	//ATDS_MyGameState* MyGAME = Cast<ATDS_MyGameState>(GetWorld()->GetGameState()); // Используем GameState из AGameMode
+//	//if (MyGAME && GetLocalRole() == ROLE_Authority) // Только сервер может вызывать паузу
+//	//{
+//	//	UE_LOG(LogTemp, Warning, TEXT("Boss defeated! Pausing game..."));
+//	//	MyGAME->PauseGameVIN(); // Ставим игру на паузу
+//	//}
+//	//else
+//	//{
+//	//	UE_LOG(LogTemp, Warning, TEXT("GameState is null or not authoritative!"));
+//	//}
+//}
 
 
 void AMy_TDS_GameProjectGameMode::TravelToNewMap()

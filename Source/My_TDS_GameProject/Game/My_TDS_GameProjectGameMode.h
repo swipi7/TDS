@@ -16,7 +16,7 @@ public:
 
 	void PlayCharacterDead();
 
-	virtual bool SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate = FCanUnpause()) override;
+	//virtual bool SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate = FCanUnpause()) override;
 
 	UPROPERTY(Replicated)
 	bool bIsGamePaused;
@@ -24,7 +24,7 @@ public:
 	//UFUNCTION(BlueprintCallable)
 	//void OnVictory();
 
-	void OnBossDefeated();
+	/*void OnBossDefeated();*/
 
 	UFUNCTION(BlueprintCallable, Category = "Map Transition")
 		void TravelToNewMap();

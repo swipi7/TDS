@@ -3,114 +3,85 @@
 
 #include "Game/TDS_MyGameState.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Character/My_TDS_GameProjectCharacter.h"
 #include "kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/UnrealType.h"
 
 
 
-ATDS_MyGameState::ATDS_MyGameState()
-{
-    bIsGamePaused = false;
-    bReplicates = true;
-}
 
-void ATDS_MyGameState::PauseGameVIN_Implementation()
+void ATDS_MyGameState::OnRep_IsGamePaused()
 {
-
-   // UE_LOG(LogTemp, Error, TEXT("PauseGame: %d")); // Только сервер может изменять состояние
-    if (GetLocalRole() == ROLE_Authority)
-    {
-            bIsGamePaused = true;
-            Multicast_PauseGame(true); // Вызов multicast функции
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("PauseGame called on client!"));
-    }
-}
-
-void ATDS_MyGameState::Multicast_PauseGame_Implementation(bool bPaused)
-{
-    FString RoleString = UEnum::GetValueAsString(GetLocalRole());//Временно!!!!
+    UWorld* World = GetWorld();
+    UE_LOG(LogTemp, Warning, TEXT("UpdateRotation: Paused = %d"));
+    if (!World) return;
+    //if (!World || World->IsNetMode(NM_DedicatedServer)) return;
     
-      UE_LOG(LogTemp, Error, TEXT("Multicast_PauseGame: bPaused = %d, Role = %s"), bPaused, *RoleString);//Временно!!!!
-      bIsGamePaused = bPaused;
-      HandlePause(bPaused);
-    
+       // 2. Блокируем ввод для всех локальных игроков
+       for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+       {
+         APlayerController* PC = It->Get();
+           if (PC && PC->IsLocalController())
+           {
+               PC->SetIgnoreMoveInput(bIsGamePaused);
+               PC->SetIgnoreLookInput(bIsGamePaused);
+               if (bIsGamePaused) PC->ConsoleCommand("pause"); // Альтернатива
+
+          }
+      }
+      // Применяем паузу ко всем персонажам
+
+
+    // 3. Останавливаем время (опционально)
+    UGameplayStatics::SetGlobalTimeDilation(World, bIsGamePaused ? 0.0f : 1.0f);
 }
 
-void ATDS_MyGameState::ResumeGameVin()
+void ATDS_MyGameState::SetPauseState(bool bPaused)
 {
-    if (GetLocalRole() == ROLE_Authority) // Только сервер может изменять состояние
+    if (HasAuthority()) // Только сервер может менять состояние
     {
-        UE_LOG(LogTemp, Error, TEXT("PauseGame called on client!"));
-        bIsGamePaused = false;
-        Multicast_PauseGame(false);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("ResumeGame called on client!"));//Временно!!!!
-    }
-}
+        bIsGamePaused = bPaused;
+        OnRep_IsGamePaused(); // Принудительный вызов для локального сервера
 
-bool ATDS_MyGameState::IsGamePausedVIN() const
-{
-    return bIsGamePaused;
-}
 
-//void ATDS_MyGameState::OnRep_GamePaused()
-//{
-//    FString RoleString = UEnum::GetValueAsString(GetLocalRole()); //Временно!!!!
-//    UE_LOG(LogTemp, Error, TEXT("OnRep_GamePaused: bIsGamePaused = %d, Role = %s"), bIsGamePaused, *RoleString);//Временно!!!!
-//    HandlePause(bIsGamePaused);
-//}
-
-void ATDS_MyGameState::HandlePause(bool bPaused)
-{
-    FString RoleString = UEnum::GetValueAsString(GetLocalRole()); // Объявление переменной
-    UE_LOG(LogTemp, Warning, TEXT("HandlePause: bPaused = %d, Role = %s"), bPaused, *RoleString);
-
-    // Вызываем SetGamePaused только на сервере
-    if (GetLocalRole() == ROLE_Authority)
-    {
-        UGameplayStatics::SetGamePaused(this, bPaused); // Пауза или возобновление игры
-    }
-
-    // На клиенте обрабатываем паузу через отключение ввода или другие механизмы
-    if (GetLocalRole() == ROLE_SimulatedProxy || GetLocalRole() == ROLE_AutonomousProxy)
-    {
-        // Получаем PlayerController
-        APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-        if (PlayerController)
+        UGameplayStatics::SetGamePaused(GetWorld(), bPaused);
+        // Для надежности: дополнительная синхронизация
+        if (GetNetMode() == NM_DedicatedServer || GetNetMode() == NM_ListenServer)
         {
-            if (bPaused)
-            {
-                // Отключаем ввод
-                PlayerController->SetIgnoreMoveInput(true);
-                PlayerController->SetIgnoreLookInput(true);
-                UE_LOG(LogTemp, Warning, TEXT("Input disabled on client!"));
-            }
-            else
-            {
-                // Включаем ввод
-                PlayerController->SetIgnoreMoveInput(false);
-                PlayerController->SetIgnoreLookInput(false);
-                UE_LOG(LogTemp, Warning, TEXT("Input enabled on client!"));
-            }
+            ForceNetUpdate(); // Принудительная репликация
         }
     }
-    //else
-    //{
-    //    UGameplayStatics::SetGamePaused(this, false); // Возобновление игры
-    //}
+}
+
+void ATDS_MyGameState::PauseGameAfterBossDeath(const UObject* WorldContextObject, float Delay)
+{
+    if (!WorldContextObject) return;
+
+    UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+    if (!World) return;
+
+    ATDS_MyGameState* GameState = World->GetGameState<ATDS_MyGameState>();
+    if (!GameState) return;
+
+    if (Delay <= 0.0f)
+    {
+        GameState->SetPauseState(true);
+    }
+    else
+    {
+        FTimerHandle TimerHandle;
+        World->GetTimerManager().SetTimerForNextTick(/*TimerHandle */  [GameState]()
+            {
+                GameState->SetPauseState(true);
+            });
+    }
 }
 
 void ATDS_MyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-   // UE_LOG(LogTemp, Error, TEXT("PauseGame: %d"));
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    UE_LOG(LogTemp, Error, TEXT("PauseGameVIN: %d"));
-    // Репликация переменной bIsGamePaused
+
     DOREPLIFETIME(ATDS_MyGameState, bIsGamePaused);
 }

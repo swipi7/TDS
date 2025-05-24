@@ -21,6 +21,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Engine/ActorChannel.h"
 #include "TDS_HealthComponent.h"
+#include "TDS_MyGameState.h"
 
 
 AMy_TDS_GameProjectCharacter::AMy_TDS_GameProjectCharacter()
@@ -34,10 +35,11 @@ AMy_TDS_GameProjectCharacter::AMy_TDS_GameProjectCharacter()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Rotate character to moving direction
+	GetCharacterMovement()->bOrientRotationToMovement = false; // Rotate character to moving direction
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 640.f, 0.f);
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
+	/*GetCharacterMovement()->bUseControllerDesiredRotation = true;*/
 
 	// Create a camera boom...
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -76,6 +78,12 @@ AMy_TDS_GameProjectCharacter::AMy_TDS_GameProjectCharacter()
 void AMy_TDS_GameProjectCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	if (bRotationBlocked && Controller)
+	{
+		// Принудительно фиксируем ротацию
+		Controller->SetControlRotation(LastRotationBeforePause);
+	}
 
 	if (CurrentCursor)
 	{
@@ -163,6 +171,50 @@ void AMy_TDS_GameProjectCharacter::SetupPlayerInputComponent(UInputComponent* Ne
 	NewInputComponent->BindKey(HotKeys[8], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<8>);
 	NewInputComponent->BindKey(HotKeys[9], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<9>);
 	NewInputComponent->BindKey(HotKeys[0], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<0>);*/
+}
+
+
+
+
+void AMy_TDS_GameProjectCharacter::LookHorizontal(float Value)
+{
+	if (!IsGamePaused() && Controller && Value != 0.f)
+	{
+		AddControllerYawInput(Value);
+	}
+}
+
+void AMy_TDS_GameProjectCharacter::LookVertical(float Value)
+{
+	if (!IsGamePaused() && Controller && Value != 0.f)
+	{
+		AddControllerPitchInput(Value);
+	}
+}
+
+bool AMy_TDS_GameProjectCharacter::IsGamePaused() const
+{
+	const ATDS_MyGameState* GameState = GetWorld()->GetGameState<ATDS_MyGameState>();
+	return GameState && GameState->bIsGamePaused;
+}
+
+void AMy_TDS_GameProjectCharacter::BlockCharacterRotation(bool bBlock)
+{
+	bRotationBlocked = bBlock;
+
+	if (bBlock)
+	{
+		// Сохраняем текущую ротацию
+		LastRotationBeforePause = Controller ? Controller->GetControlRotation() : GetActorRotation();
+
+		// Отключаем физическое вращение
+		GetCharacterMovement()->RotationRate = FRotator::ZeroRotator;
+	}
+	else
+	{
+		GetCharacterMovement()->RotationRate = FRotator(0, 360, 0);
+	}
+
 }
 
 bool AMy_TDS_GameProjectCharacter::bSprintForward()
