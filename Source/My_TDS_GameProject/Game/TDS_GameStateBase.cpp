@@ -2,7 +2,7 @@
 
 
 #include "Game/TDS_GameStateBase.h"
-#include "kismet/GameplayStatics.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 

@@ -20,17 +20,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Game")
-		void OnVictory();
+	//UFUNCTION(BlueprintCallable, Category = "Game")
+	//	void OnVictory();
 
 private:
-	void DisablePlayerMovement();
+	/*void DisablePlayerMovement();
 	void DisableEnemies();
 	void DisableWeapons();
 
@@ -38,6 +38,6 @@ private:
 		bool bIsVictory;
 
 	UFUNCTION()
-		void OnRep_Victory();
+		void OnRep_Victory();*/
 };
 //Вресенно нужно!

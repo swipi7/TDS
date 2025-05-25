@@ -5,7 +5,7 @@
 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Character/My_TDS_GameProjectCharacter.h"
-#include "kismet/GameplayStatics.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/UnrealType.h"
 

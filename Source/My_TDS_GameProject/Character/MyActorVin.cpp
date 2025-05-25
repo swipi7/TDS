@@ -32,64 +32,64 @@ void AMyActorVin::Tick(float DeltaTime)
 
 }
 
-void AMyActorVin::OnVictory()
-{
-    if (HasAuthority()) 
-    {
-        bIsVictory = true; 
-        OnRep_Victory(); 
-    }
-}
+//void AMyActorVin::OnVictory()
+//{
+//    if (HasAuthority()) 
+//    {
+//        bIsVictory = true; 
+//        OnRep_Victory(); 
+//    }
+//}
 
-void AMyActorVin::DisablePlayerMovement()
-{
-    for (TActorIterator<AMy_TDS_GameProjectCharacter> It(GetWorld()); It; ++It)
-    {
-        AMy_TDS_GameProjectCharacter* Meen = *It;
-        if (Meen)
-        {
-            Meen->GetCharacterMovement()->DisableMovement();
-            Meen->DisableInput(nullptr);
-        }
-    }
-}
+//void AMyActorVin::DisablePlayerMovement()
+//{
+//    for (TActorIterator<AMy_TDS_GameProjectCharacter> It(GetWorld()); It; ++It)
+//    {
+//        AMy_TDS_GameProjectCharacter* Meen = *It;
+//        if (Meen)
+//        {
+//            Meen->GetCharacterMovement()->DisableMovement();
+//            Meen->DisableInput(nullptr);
+//        }
+//    }
+//}
 
-void AMyActorVin::DisableEnemies()
-{
-    for (TActorIterator<AMy_TDS_GameProjectCharacter> It(GetWorld()); It; ++It)
-    {
-        AMy_TDS_GameProjectCharacter* Enemy = *It;
-        if (Enemy && Enemy->ActorHasTag("Enemy"))
-        {
-            Enemy->Destroy();
-        }
-    }
-}
+//void AMyActorVin::DisableEnemies()
+//{
+//    for (TActorIterator<AMy_TDS_GameProjectCharacter> It(GetWorld()); It; ++It)
+//    {
+//        AMy_TDS_GameProjectCharacter* Enemy = *It;
+//        if (Enemy && Enemy->ActorHasTag("Enemy"))
+//        {
+//            Enemy->Destroy();
+//        }
+//    }
+//}
 
-void AMyActorVin::DisableWeapons()
-{
-    for (TActorIterator<AMy_TDS_GameProjectCharacter> It(GetWorld()); It; ++It)
-    {
-        AMy_TDS_GameProjectCharacter* Character = *It;
-        if (Character)
-        {
-            //Character->DisableWeapon(); // Предположим, что у вас есть метод DisableWeapon
-        }
-    }
-}
+//void AMyActorVin::DisableWeapons()
+//{
+//    for (TActorIterator<AMy_TDS_GameProjectCharacter> It(GetWorld()); It; ++It)
+//    {
+//        AMy_TDS_GameProjectCharacter* Character = *It;
+//        if (Character)
+//        {
+//            //Character->DisableWeapon(); // Предположим, что у вас есть метод DisableWeapon
+//        }
+//    }
+//}
 
-void AMyActorVin::OnRep_Victory()
-{
-    if (bIsVictory)
-    {
-        DisablePlayerMovement();
-        DisableEnemies();
-        DisableWeapons();
-    }
-}
+//void AMyActorVin::OnRep_Victory()
+//{
+//    if (bIsVictory)
+//    {
+//        DisablePlayerMovement();
+//        DisableEnemies();
+//        DisableWeapons();
+//    }
+//}
 
-void AMyActorVin::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    DOREPLIFETIME(AMyActorVin, bIsVictory);
-}
+//void AMyActorVin::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+//{
+//    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+//    DOREPLIFETIME(AMyActorVin, bIsVictory);
+//}

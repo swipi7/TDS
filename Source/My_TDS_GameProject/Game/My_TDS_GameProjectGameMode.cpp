@@ -4,7 +4,7 @@
 #include "My_TDS_GameProjectPlayerController.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/World.h"
-#include "kismet/GameplayStatics.h"
+#include "Kismet/GameplayStatics.h"
 #include "TDS_MyGameState.h"
 #include "Net/UnrealNetwork.h"
 
