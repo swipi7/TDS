@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "GameFrameWork/CharacterMovementComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "MyActorVin.generated.h"
 
 UCLASS()
