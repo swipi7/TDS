@@ -14,19 +14,14 @@ class AMy_TDS_GameProjectPlayerController : public APlayerController
 public:
 	AMy_TDS_GameProjectPlayerController();
 
-	//UFUNCTION(BlueprintCallable)
-		/*virtual void Pause() override;*/
 
-	//UFUNCTION(reliable, client)
-	//	void ClientSetPauser(APlayerState* Pauser);
 	
 
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 		bool IsGamePaused() const;
 
 private:
-	//UFUNCTION(reliable, server, WithValidation)
-	//	void ServerPauseGame();
+	
 
 protected:
 	/** True if the controlled character should navigate to the mouse cursor. */

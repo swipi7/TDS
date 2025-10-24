@@ -109,11 +109,7 @@ void AProjectile_Bomborgmebt::Explose_Server_Implementation()
 		ProjectileSetting.ProjectileMaxRadiusDamage,
 		5,
 		NULL, IgnoredActor, nullptr, nullptr);
-		/*GetActorLocation(),
-		ProjectileSetting.ProjectileMinRadiusDamage,
-		ProjectileSetting.ProjectileMaxRadiusDamage,
-		5,
-		NULL, IgnoredActor,nullptr,nullptr);*/
+		
 
 	this->Destroy();
 }

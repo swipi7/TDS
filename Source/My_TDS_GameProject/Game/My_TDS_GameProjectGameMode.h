@@ -16,27 +16,16 @@ public:
 
 	void PlayCharacterDead();
 
-	//virtual bool SetPause(APlayerController* PC, FCanUnpause CanUnpauseDelegate = FCanUnpause()) override;
 
 	UPROPERTY(Replicated)
 	bool bIsGamePaused;
 
-	//UFUNCTION(BlueprintCallable)
-	//void OnVictory();
-
-	/*void OnBossDefeated();*/
+	
 
 	UFUNCTION(BlueprintCallable, Category = "Map Transition")
 		void TravelToNewMap();
 
-	//void SetPauseState(bool bPaused);
-
-	//virtual bool ClearPause() override;
-
-	//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	//UFUNCTION()
-	//void OnRep_GamePaused();
+		//virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	void CallAllClientsSetWorldSettingsPauser(APlayerState* Pauser);

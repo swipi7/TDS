@@ -52,11 +52,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class UTDS_Inventar* InventoryComponent;
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UMyTDS_CharacterHealthComponent* HealthComponent;*/
 
-	//UPROPERTY(ReplicatedUsing = OnRep_BlockRotation, BlueprintReadOnly, Category = "Gameplay")
-	//	bool bIsRotationBlocked;
 
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 		void BlockCharacterRotation(bool bBlock);
@@ -82,10 +78,6 @@ private:
 
 	FRotator LastRotationBeforePause;
 	bool bRotationBlocked = false;
-
-	/** A decal that projects to the cursor location. */
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UDecalComponent* CursorToWorld;*/
 
 	bool bSprintForward();
 

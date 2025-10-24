@@ -130,39 +130,3 @@ void AMy_TDS_GameProjectPlayerController::OnSetDestinationReleased()
 	bMoveToMouseCursor = false;
 }
 
-//void AMy_TDS_GameProjectPlayerController::BP_Pause(bool flag)
-//{
-//	SetPause(flag);
-//}
-//
-//void AMy_TDS_GameProjectPlayerController::Pausesis_Multicast_Implementation(bool flag)
-//{
-//	BP_Pause(flag);
-//}
-//
-//void AMy_TDS_GameProjectPlayerController::OnUnPossess()
-//{
-//	Super::OnUnPossess();
-//}
-//
-//void AMy_TDS_GameProjectPlayerController::Pause()
-//{
-//	ServerPauseGame();
-//}
-//
-//bool AMy_TDS_GameProjectPlayerController::ServerPauseGame_Validate()
-//{
-//	return true;
-//}
-//
-//void AMy_TDS_GameProjectPlayerController::ServerPauseGame_Implementation()
-//{
-//	bool result = SetPause(!IsPaused());
-//}
-
-//void AMy_TDS_GameProjectPlayerController::ClientSetPauser_Implementation(APlayerState* Pauser)
-//{
-//	AWorldSettings* WorldSettings = GetWorldSettings();
-//	if (WorldSettings)
-//		WorldSettings->Pauser = Pauser;
-//}

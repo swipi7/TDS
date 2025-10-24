@@ -118,7 +118,7 @@ void AMy_TDS_GameProjectCharacter::BeginPlay()
 
 	if (GetWorld() && GetWorld()->GetNetMode() != NM_DedicatedServer)
 	{
-		//InitWeapon(InitWeaponName);
+		
 
 		if (CursorMaterial && (GetLocalRole() == ROLE_AutonomousProxy || GetLocalRole() == ROLE_Authority))
 		{
@@ -149,28 +149,6 @@ void AMy_TDS_GameProjectCharacter::SetupPlayerInputComponent(UInputComponent* Ne
 
 	NewInputComponent->BindAction(TEXT("DropCurrentWeapon"), EInputEvent::IE_Pressed, this, &AMy_TDS_GameProjectCharacter::DropCurrentWeapon);
 
-	/*TArray<FKey> HotKeys;
-	HotKeys.Add(EKeys::One);
-	HotKeys.Add(EKeys::Two);
-	HotKeys.Add(EKeys::Three);
-	HotKeys.Add(EKeys::Four);
-	HotKeys.Add(EKeys::Five);
-	HotKeys.Add(EKeys::Six);
-	HotKeys.Add(EKeys::Seven);
-	HotKeys.Add(EKeys::Eight);
-	HotKeys.Add(EKeys::Nine);
-	HotKeys.Add(EKeys::Zero);
-
-	NewInputComponent->BindKey(HotKeys[1], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<1>);
-	NewInputComponent->BindKey(HotKeys[2], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<2>);
-	NewInputComponent->BindKey(HotKeys[3], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<3>);
-	NewInputComponent->BindKey(HotKeys[4], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<4>);
-	NewInputComponent->BindKey(HotKeys[5], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<5>);
-	NewInputComponent->BindKey(HotKeys[6], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<6>);
-	NewInputComponent->BindKey(HotKeys[7], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<7>);
-	NewInputComponent->BindKey(HotKeys[8], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<8>);
-	NewInputComponent->BindKey(HotKeys[9], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<9>);
-	NewInputComponent->BindKey(HotKeys[0], IE_Pressed, this, &AMy_TDS_GameProjectCharacter::TKeyPressed<0>);*/
 }
 
 
@@ -362,8 +340,6 @@ void AMy_TDS_GameProjectCharacter::MovementTick(float DeltaTime)
 			AddMovementInput(FVector(1.0f, 0.0f, 0.0f), AxisX);
 			AddMovementInput(FVector(0.0f, 1.0f, 0.0f), AxisY);
 
-			/*FString SEnum = UEnum::GetValueAsString(GetMovementState());
-			UE_LOG(LogMy_TDS_GameProject_Net, Error, TEXT("Movement State - %s"), *SEnum);*/
 
 			if (MovementState == EMovementState::SprintRun_State)
 			{
@@ -435,8 +411,7 @@ void AMy_TDS_GameProjectCharacter::AttackCharEvent(bool bIsFiring)
 		//ToDo Check melee or range
 		myWeapon->SetWeaponStateFire_OnServer(bIsFiring);
 	}
-	//else
-		//UE_LOG(LogTemp, Warning, TEXT("FIRE22222"));
+
 }
 
 void AMy_TDS_GameProjectCharacter::CharacterUpdate()
@@ -508,8 +483,6 @@ void AMy_TDS_GameProjectCharacter::ChangeMovementState()
 
 	SetMovementState_OnServer(NewState);
 
-	//MovementState = NewState;
-	//CharacterUpdate();
 
 	//Weapon state update
 	AWeaponDefaults* myWeapon = GetCurrentWeapon();
@@ -590,9 +563,7 @@ void AMy_TDS_GameProjectCharacter::InitWeapon(FName IdWeaponName, FAdditionalWea
 		
 		else
 		{
-			/*UE_LOG(LogTemp, Warning, TEXT("ATPSCharacter::InitWeapon - Weapon not found in table -NULL"));
-			UE_LOG(LogTemp, Warning, TEXT("WeaponSpawn"));*/
-
+			
 		}
 	}
 }
@@ -744,21 +715,12 @@ void AMy_TDS_GameProjectCharacter::TryAbilityEnabled()
 
 void AMy_TDS_GameProjectCharacter::TryAbilityInvul()
 {
-	//UE_LOG(LogTemp, Warning, TEXT("INVULNNNNNN"));
+	
 
 	Invul = true;
 
 	ResetInvul();
 
-
-	//if (AbilityEffects)//TODO Cool down
-	//{
-	//	UTDS_StateEffect_ExecuteInvulnerability* NewEffect = NewObject<UTDS_StateEffect_ExecuteInvulnerability>(this, AbilityEffects);
-	//	if (NewEffect)
-	//	{
-	//		NewEffect->InitObject(this);
-	//	}
-	//}
 }
 
 EPhysicalSurface AMy_TDS_GameProjectCharacter::GetSurfaceType()

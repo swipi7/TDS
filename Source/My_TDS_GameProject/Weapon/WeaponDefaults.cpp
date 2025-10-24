@@ -80,15 +80,8 @@ void AWeaponDefaults::FireTick(float DeltaTime)
 		else
 			FireTimer -= DeltaTime;
 	}
-	/*else
-	{
-		if (!WeaponReloading && CheckCanWeaponReload())
-		{
-			InitReload();
-		}
-	}*/
 }
-//UE_LOG(LogTemp, Warning, TEXT("222222222222"));
+
 
 void AWeaponDefaults::ReloadTick(float DeltaTime)
 {
@@ -131,8 +124,6 @@ void AWeaponDefaults::DispersionTick(float DeltaTime)
 			}
 		}
 	}
-	//if (ShowDebug)
-		//UE_LOG(LogTemp, Warning, TEXT("Dispersion: MAX = %f. MIN = %f. Current = %f"), CurrentDispersionMax, CurrentDispersionMin, CurrentDispersion);
 }
 
 void AWeaponDefaults::ShellDropTick(float DeltaTime)
@@ -171,15 +162,11 @@ void AWeaponDefaults::WeaponInit()
 	if (SkeletalMeshWeapon && !SkeletalMeshWeapon->SkeletalMesh)
 	{
 		SkeletalMeshWeapon->DestroyComponent(true);
-		//UE_LOG(LogTemp, Warning, TEXT("WeaponInet 1"));
-
 	}
 
 	if (StaticMeshWeapon && !StaticMeshWeapon->GetStaticMesh())
 	{
 		StaticMeshWeapon->DestroyComponent();
-		//UE_LOG(LogTemp, Warning, TEXT("WeaponInet 2"));
-
 	}
 	UpdateStateWeapon_OnServer(EMovementState::Run_State);
 }
@@ -190,7 +177,7 @@ void AWeaponDefaults::SetWeaponStateFire_OnServer_Implementation(bool bIsFire)
 		WeaponFiring = bIsFire;
 	else
 		WeaponFiring = false;
-	FireTimer = 0.01f;//!!!!!
+	FireTimer = 0.01f;
 }
 
 bool AWeaponDefaults::CheckWeaponCanFire()
@@ -329,22 +316,12 @@ void AWeaponDefaults::Fire()
 						UTypes::AddEffectBySurfaceType(Hit.GetActor(), Hit.BoneName, ProjectileInfo.Effect, mySurfacetype);
 						
 
-					//if (Hit.GetActor()->GetClass()->ImplementsInterface(UTDS_IGemeActor::StaticClass()))
-					//{
-					//	/*ITDS_IGameActor::Execute_AviableForEffect(Hit.GetActor());
-
-					//	ITDS_IGameActor::Execute_AviableForEffectBP(Hit.GetActor());*/
-					//}
-
-					//UTDS_StateEffect* NewEffect = NewObject<UTDS_StateEffect>(Hit.GetActor(), FName("Effect"));
-
 					UGameplayStatics::ApplyPointDamage(Hit.GetActor(), WeaponSetting.ProjectileSetting.ProjectileDamage, Hit.TraceStart, Hit, GetInstigatorController(), this, NULL); 
-					//UGameplayStatics::ApplyDamage(Hit.GetActor(), WeaponSetting.ProjectileSetting.ProjectileDamage, GetInstigatorController(), this, NULL);
+			
 				}
 			}
 		}
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("33333333333333333333333333"));
 
 	if (GetWeaponRound() <= 0 && !WeaponReloading)
 	{
@@ -421,7 +398,7 @@ FVector AWeaponDefaults::GetFireEndLocation() const
 	FVector EndLocation = FVector(0.f);
 
 	FVector tmpV = (ShootLocation->GetComponentLocation() - ShootEndLocation);
-	//UE_LOG(LogTemp, Warning, TEXT("Vector: X = %f. Y = %f. Size = %f"), tmpV.X, tmpV.Y, tmpV.Size());
+	
 
 	if (tmpV.Size() > SizeVectorToChangeShootDirectionLogic)
 	{
@@ -522,12 +499,6 @@ void AWeaponDefaults::FinishReload()
 
 	OnWeaponReloadEnd.Broadcast(true, -AmmoNeedTakeFromInv);
 
-	/*int32 AmmoNeedTake = AdditionalWeaponInfo.Round;
-	AmmoNeedTake = AmmoNeedTake - AviableAmmoFromInventory;
-	AdditionalWeaponInfo.Round = AviableAmmoFromInventory;*/
-
-	/*OnWeaponReloadEnd.Broadcast(true, AmmoNeedTake);*/
-
 }
 
 void AWeaponDefaults::InitDropMesh_OnServer_Implementation(UStaticMesh* DropMesh, FTransform Offset, FVector DropImpulseDirection, float LifeTimeMesh, float ImpulseRandomDispersion, float PowerImpulse, float CustomMass)
@@ -544,9 +515,6 @@ void AWeaponDefaults::InitDropMesh_OnServer_Implementation(UStaticMesh* DropMesh
 		
 
 		ShellDropFire_Multicast(DropMesh, Transform, DropImpulseDirection, LifeTimeMesh, ImpulseRandomDispersion, PowerImpulse, CustomMass, LocalDir);
-
-		
-
 
 	}
 }
